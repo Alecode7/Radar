@@ -27,9 +27,159 @@
 1. 板端以5 Hz节拍处理点云和呼吸相位，输出结构化状态字段；
 2. PC端解析三天线IQ，进一步计算心率候选和会话统计结果。
 
-## 板端算法
+## 核心算法一：呼吸率检测
 
-板端核心代码位于[`firmware/sleep_detect.c`](firmware/sleep_detect.c)，接口和结果结构定义在[`firmware/sleep_detect.h`](firmware/sleep_detect.h)。
+呼吸算法运行在板端，核心实现位于[`firmware/sleep_detect.c`](firmware/sleep_detect.c)。它同时利用床区micro点数量和目标距离BIN的IQ相位；其中IQ相位链路是主要的呼吸率数值来源。
+
+处理流程为：
+
+1. 只在已入床且无明显体动时接收目标BIN相位；
+2. 将`atan2(Q, I)`得到的周期相位展开为连续相位；
+3. 在呼吸频率对应的时延范围内计算自相关，寻找最佳周期；
+4. 将周期换算为每分钟呼吸次数；
+5. 对候选值执行重复确认、变化限速和短时保持。
+
+### IQ相位展开
+
+相位在`-π～π`之间跳变，必须先消除`2π`回绕；过大的单帧相位变化会被视为异常点。
+
+```c
+delta = phase_mrad - g_sleep_state.breath_phase_last_mrad;
+while (delta > 3142) {
+    delta -= 6283;
+}
+while (delta < -3142) {
+    delta += 6283;
+}
+
+if (delta > BREATH_PHASE_DELTA_MAX_MRAD ||
+    delta < -BREATH_PHASE_DELTA_MAX_MRAD) {
+    g_sleep_state.breath_phase_last_mrad = phase_mrad;
+    return;
+}
+
+g_sleep_state.breath_phase_last_mrad = phase_mrad;
+g_sleep_state.breath_phase_unwrapped_mrad += delta;
+sleep_detect_push_breath_phase(g_sleep_state.breath_phase_unwrapped_mrad);
+```
+
+### 自相关周期搜索
+
+算法仅搜索合理呼吸率对应的时延区间，并选择平均相关性最高的周期：
+
+```c
+for (uint16_t lag = min_lag; lag <= max_lag; ++lag) {
+    int64_t score = 0;
+    uint16_t samples = count - lag;
+
+    for (uint16_t i = lag; i < count; ++i) {
+        int64_t cur = sleep_detect_get_breath_phase_sample(i) - mean;
+        int64_t prev = sleep_detect_get_breath_phase_sample(i - lag) - mean;
+        score += cur * prev;
+    }
+
+    score = samples > 0 ? score / samples : 0;
+    if (score > best_score || (score == best_score && lag > best_lag)) {
+        best_score = score;
+        best_lag = lag;
+    }
+}
+
+return (uint16_t)((60U * 1000U) /
+                  (best_lag * BREATH_SAMPLE_PERIOD_MS));
+```
+
+得到的瞬时候选不会直接发布。相邻候选在容差范围内连续出现后才更新稳定值，大幅变化需要更长确认时间；短时无有效周期时继续保持最近的稳定结果。完整逻辑见[`sleep_detect_stabilize_breath_rate()`](firmware/sleep_detect.c)。
+
+## 核心算法二：心率检测
+
+心率算法位于[`host_algorithm/heart_rate.py`](host_algorithm/heart_rate.py)，支持5 Hz单BIN安全采样和20 Hz多BIN实验数据。
+
+![心率处理链路](docs/heart_rate_pipeline.svg)
+
+处理流程为：
+
+1. 解析`HRRAW`中的目标BIN、多BIN数据和三路天线IQ；
+2. 按BIN切分连续数据段，避免不同距离单元的相位被直接拼接；
+3. 对每路天线执行相位展开、线性去趋势和移动均值高通；
+4. 在48～120 BPM范围进行0.5 BPM步进的窄带频率扫描；
+5. 汇总多个BIN，并从三路天线峰值中选择共识候选；
+6. 使用呼吸率检查二、三倍频及高阶谐波重叠；
+7. 经过连续确认、平滑、变化限速、保持和过期后输出。
+
+### 从IQ提取心跳频谱
+
+每个BIN、每根天线独立处理，先将复数IQ转换为连续相位，再去除慢漂移：
+
+```python
+timestamps = [sample.timestamp - samples[0].timestamp for sample in samples]
+phase = self._unwrap_phase(
+    [self._antenna_iq_for_bin(sample, bin_index)[antenna]
+     for sample in samples]
+)
+filtered = self._high_pass(self._detrend(phase, timestamps), sample_rate)
+return [self._power_at_bpm(filtered, timestamps, bpm) for bpm in bpms]
+```
+
+频率扫描直接计算指定BPM下的复数投影功率，并使用Hann窗降低频谱泄漏：
+
+```python
+omega = 2.0 * math.pi * (bpm / 60.0)
+real = imag = 0.0
+
+for index, (timestamp, value) in enumerate(zip(timestamps, values)):
+    window = 0.5 - 0.5 * math.cos(2.0 * math.pi * index / last)
+    angle = omega * timestamp
+    weighted = value * window
+    real += weighted * math.cos(angle)
+    imag -= weighted * math.sin(angle)
+
+power = real * real + imag * imag
+```
+
+### 三天线共识
+
+单根天线容易受到姿态、遮挡和多径影响，因此算法要求候选在至少两路天线中落入同一频率簇，并综合峰值质量与离散度排序：
+
+```python
+for center in centers:
+    matches = []
+    for antenna_peaks in peaks_by_antenna:
+        nearby = [peak for peak in antenna_peaks
+                  if abs(peak.bpm - center) <= 4.0]
+        if nearby:
+            matches.append(max(nearby, key=lambda peak: peak.score))
+
+    if len(matches) < 2:
+        continue
+
+    total_score = sum(peak.score for peak in matches)
+    weighted_bpm = sum(peak.bpm * peak.score for peak in matches) / total_score
+    spread = max(peak.bpm for peak in matches) - min(peak.bpm for peak in matches)
+    rank = total_score + 1.5 * (len(matches) - 1) - spread * 0.25
+```
+
+### 呼吸谐波抑制
+
+呼吸信号通常强于心跳，其三倍频可能正好落入静息心率范围。算法不会简单删除该频段，而是比较心率候选与`3 × 呼吸率`的历史相关性：若候选持续跟随呼吸谐波变化，则标记冲突；若两者变化相互独立且心率候选足够稳定，则允许保留。
+
+```python
+heart_values = [candidate for candidate, _rate in history]
+harmonic_values = [rate * 3.0 for _candidate, rate in history]
+correlation = self._correlation(heart_values, harmonic_values)
+heart_spread = statistics.pstdev(heart_values)
+
+independent = (
+    max(harmonic_values) - min(harmonic_values) >= 9.0
+    and abs(correlation) < 0.20
+    and heart_spread <= 2.5
+)
+harmonic_conflict = not independent
+```
+
+## 其他睡眠算法
+
+板端接口和结果结构定义在[`firmware/sleep_detect.h`](firmware/sleep_detect.h)。
 
 ### 人员、活动与在床判断
 
@@ -39,19 +189,9 @@
 - 进入和离开分别采用独立连续帧门槛，避免状态抖动；
 - 活动点数量与速度共同生成四级体动强度。
 
-### 呼吸检测
-
-- 统计床区micro点形成呼吸代理信号；
-- 通过时间窗口质量判断生成`BV`；
-- 使用自相关搜索呼吸周期；
-- 对目标距离BIN的复数IQ进行相位展开；
-- 将候选呼吸率经过重复确认、切换保护和预热后输出。
-
 ### 睡眠状态与翻身
 
 ![睡眠状态机](docs/sleep_state_machine.svg)
-
-睡眠状态分为：
 
 | 状态值 | 状态 | 主要条件 |
 |---:|---|---|
@@ -62,23 +202,7 @@
 
 翻身事件采用“动作前安静 → 持续动作 → 恢复安静和呼吸”的完整过程确认，并设置事件保持和冷却时间。
 
-## PC端算法
-
-### 心率候选估计
-
-[`host_algorithm/heart_rate.py`](host_algorithm/heart_rate.py)支持5 Hz单BIN安全采样和20 Hz多BIN实验数据。
-
-![心率处理链路](docs/heart_rate_pipeline.svg)
-
-主要处理步骤：
-
-1. 解析`HRRAW`中的采样率、目标BIN和三天线IQ；
-2. 检查目标距离稳定性，并对相邻BIN分段处理；
-3. 对每路天线执行相位展开、去趋势和高通处理；
-4. 扫描48～120次/分钟的候选频率；
-5. 融合多天线候选，检查支持数、峰值质量和离散度；
-6. 标记呼吸三倍频及高阶谐波冲突；
-7. 通过连续确认、平滑、保持和过期机制输出结果。
+## 配套上位机功能
 
 ### 会话统计
 
