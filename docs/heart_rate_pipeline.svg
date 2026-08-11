@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#312e81"/><stop offset="1" stop-color="#581c87"/></linearGradient><marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0 L9 3 L0 6 Z" fill="#a78bfa"/></marker><filter id="ds"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-opacity="0.25"/></filter></defs>
+  <rect width="1200" height="440" rx="24" fill="url(#g)"/>
+  <text x="52" y="57" fill="#fff" font-size="28" font-weight="700" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">多天线 IQ 心率候选处理链路</text>
+  <text x="52" y="87" fill="#ddd6fe" font-size="15" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">目标不是强行输出数值，而是在呼吸谐波和动作干扰下保留可靠候选</text>
+  <g filter="url(#ds)" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">
+    <rect x="45" y="150" width="150" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="120" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">HRRAW</text><text x="120" y="221" text-anchor="middle" fill="#555" font-size="14">BIN + FS</text><text x="120" y="247" text-anchor="middle" fill="#555" font-size="14">I0/Q0...I2/Q2</text>
+    <rect x="235" y="150" width="150" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="310" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">目标稳定</text><text x="310" y="221" text-anchor="middle" fill="#555" font-size="14">主BIN占比</text><text x="310" y="247" text-anchor="middle" fill="#555" font-size="14">相邻BIN分段</text>
+    <rect x="425" y="150" width="150" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="500" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">相位处理</text><text x="500" y="221" text-anchor="middle" fill="#555" font-size="14">atan2 + 解缠</text><text x="500" y="247" text-anchor="middle" fill="#555" font-size="14">去趋势 + 高通</text>
+    <rect x="615" y="150" width="150" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="690" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">频谱扫描</text><text x="690" y="221" text-anchor="middle" fill="#555" font-size="14">48～120 BPM</text><text x="690" y="247" text-anchor="middle" fill="#555" font-size="14">每0.5 BPM</text>
+    <rect x="805" y="150" width="150" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="880" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">多路共识</text><text x="880" y="221" text-anchor="middle" fill="#555" font-size="14">三天线峰值</text><text x="880" y="247" text-anchor="middle" fill="#555" font-size="14">支持数/离散度</text>
+    <rect x="995" y="150" width="160" height="130" rx="18" fill="#fff" opacity="0.96"/><text x="1075" y="187" text-anchor="middle" fill="#312e81" font-size="18" font-weight="700">候选输出</text><text x="1075" y="221" text-anchor="middle" fill="#555" font-size="14">连续确认</text><text x="1075" y="247" text-anchor="middle" fill="#555" font-size="14">平滑/保持/过期</text>
+  </g>
+  <g stroke="#a78bfa" stroke-width="4" marker-end="url(#ar)"><path d="M195 215 H225"/><path d="M385 215 H415"/><path d="M575 215 H605"/><path d="M765 215 H795"/><path d="M955 215 H985"/></g>
+  <path d="M690 295 C690 365 1025 365 1075 290" fill="none" stroke="#fbbf24" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#ar)"/>
+  <text x="865" y="355" text-anchor="middle" fill="#fde68a" font-size="14" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">呼吸率 × 3 / × 4 / × 5 谐波冲突检查</text>
+  <rect x="60" y="330" width="415" height="54" rx="13" fill="#1e1b4b" stroke="#8b5cf6"/>
+  <text x="268" y="353" text-anchor="middle" fill="#ddd6fe" font-size="13" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">暂停条件：离床、最近3秒活动、呼吸尚未稳定、目标BIN占比不足</text>
+  <text x="268" y="373" text-anchor="middle" fill="#c4b5fd" font-size="12" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">宁可暂时无结果，也不让明显谐波覆盖最近可靠心率</text>
+</svg>

@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+.venv/
+venv/
+*.log
+*.csv
+*.txt
+.DS_Store
+Thumbs.db
+Desktop.ini
