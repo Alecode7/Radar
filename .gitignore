@@ -1,0 +1,49 @@
+# Local agent and editor state
+/.agents/
+/.codex/
+.vscode/
+.idea/
+
+# Vendor SDK, installers, drivers, manuals and reference bundles
+/RS6x_7x_mmWave_sdk_V2.0.6/
+/cdk-windows-V2.24.11-20250612-1933/
+/睡眠探测参考/
+*.zip
+*.ZIP
+*.7z
+*.pdf
+
+# Firmware build products and generated metadata
+**/Obj/
+**/Lst/
+**/output/
+**/.cache/
+**/.cdk/
+*.img
+*.elf
+*.map
+*.asm
+*.o
+*.d
+
+# Python environments, caches and test output
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+.venv/
+venv/
+*.py[cod]
+
+# Runtime logs and exported sessions
+*.log
+mrs6130_sleep_*.txt
+mrs6130_session_*.csv
+
+# Local configuration and OS files
+.env
+.env.*
+!.env.example
+Thumbs.db
+Desktop.ini
+.DS_Store

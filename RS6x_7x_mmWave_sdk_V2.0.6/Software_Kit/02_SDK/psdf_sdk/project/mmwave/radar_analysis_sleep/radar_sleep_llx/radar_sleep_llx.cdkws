@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CDK_Workspace Name="radar_sleep_llx" Database="LanguageSever">
+  <DefaultPackPath>$(CDKWS)\__workspace_pack__</DefaultPackPath>
+  <Project Name="radar_analysis_sleep_MRS6130_P1812" Path="../cdk_6130_1812_xip_cpus_sleep/project.cdkproj" RootPath="" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="radar_analysis_sleep_MRS6130_P1812" ConfigName="psdf"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CDK_Workspace>
