@@ -30,6 +30,7 @@
 #define SLEEP_PROCESS_FRAME_DIV		1U
 #define SLEEP_HEART_RAW_ENABLE		0U
 #define SLEEP_HEART_SAFE_REPORT_ENABLE	1U
+#define SLEEP_BINARY_POINT_UPLOAD_ENABLE	0U
 #define SLEEP_HEART_BIN_RADIUS		1U
 #define SLEEP_HEART_BIN_COUNT		(SLEEP_HEART_BIN_RADIUS * 2U + 1U)
 
@@ -1375,7 +1376,9 @@ int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
 				       (unsigned long)sleep_result->breath_phase_amp,
 				       sleep_result->breath_phase_quality);
 		}
+	#if SLEEP_BINARY_POINT_UPLOAD_ENABLE
 		mmw_detection3d_data_report(&D_data_test, &D_State_test, NULL);
+	#endif
 		ADD_TIME_ESCAPE(time_report, time_start);
 		UPDATE_TIME_DBG_INFO(time_report, "report", g_time_dbg_info.report);
 

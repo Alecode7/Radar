@@ -212,7 +212,7 @@ int main(void)
     }
 
     sleep_detect_init(NULL);
-    printf("SLEEP_FW_READY p1812 SAFEHR5 MICROIQ\r\n");
+    printf("SLEEP_FW_READY p1812 SAFEHR5 MICROIQ NOPOINTTX\r\n");
 
 #if (CONFIG_PM)
     wkio_wake_init();
