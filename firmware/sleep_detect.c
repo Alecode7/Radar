@@ -1,5 +1,4 @@
 #include "sleep_detect.h"
-#include <stddef.h>
 
 #ifndef ABS
 #define ABS(x) ((x) < 0 ? -(x) : (x))

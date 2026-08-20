@@ -2,16 +2,76 @@ from __future__ import annotations
 
 import unittest
 
-from host_algorithm.session_metrics import (
+from session_metrics import (
+    SleepOnsetTracker,
     calculate_heart_session_stats,
     calculate_motion_score,
+    calculate_sleep_quality_score,
     calculate_ten_minute_summary,
     evaluate_monitoring_alerts,
     session_duration_notice,
+    should_auto_export_session,
+    split_vital_segments,
+    stream_health_state,
 )
 
 
 class SessionMetricsTests(unittest.TestCase):
+    def test_sleep_onset_backtracks_to_continuous_quiet_start(self) -> None:
+        tracker = SleepOnsetTracker()
+        tracker.update(10.0, True, 1)
+        tracker.update(20.0, True, 2)
+        tracker.update(320.0, True, 3)
+
+        self.assertEqual(tracker.estimated_onset_at, 20.0)
+        self.assertEqual(tracker.confirmed_at, 320.0)
+
+    def test_sleep_onset_discards_quiet_period_interrupted_by_activity(self) -> None:
+        tracker = SleepOnsetTracker()
+        tracker.update(20.0, True, 2)
+        tracker.update(40.0, True, 1)
+        tracker.update(60.0, True, 2)
+        tracker.update(360.0, True, 3)
+
+        self.assertEqual(tracker.estimated_onset_at, 60.0)
+
+    def test_stream_health_thresholds(self) -> None:
+        self.assertEqual(
+            stream_health_state(connected=False, monitoring=True, age_seconds=20),
+            "disconnected",
+        )
+        self.assertEqual(
+            stream_health_state(connected=True, monitoring=False, age_seconds=20),
+            "stopped",
+        )
+        self.assertEqual(
+            stream_health_state(connected=True, monitoring=True, age_seconds=None),
+            "waiting",
+        )
+        self.assertEqual(
+            stream_health_state(connected=True, monitoring=True, age_seconds=6),
+            "delayed",
+        )
+        self.assertEqual(
+            stream_health_state(connected=True, monitoring=True, age_seconds=11),
+            "interrupted",
+        )
+
+    def test_vital_curve_breaks_on_invalid_value_and_long_gap(self) -> None:
+        segments = split_vital_segments(
+            ((0.0, 60), (5.0, 61), (10.0, 0), (15.0, 62), (90.0, 63)),
+            max_gap_seconds=60.0,
+        )
+
+        self.assertEqual(
+            segments,
+            (
+                ((0.0, 60.0), (5.0, 61.0)),
+                ((15.0, 62.0),),
+                ((90.0, 63.0),),
+            ),
+        )
+
     def test_heart_session_stats(self) -> None:
         stats = calculate_heart_session_stats(10, (0, 62, 63, 64, 65, 0))
         self.assertEqual(stats.valid_count, 4)
@@ -62,11 +122,79 @@ class SessionMetricsTests(unittest.TestCase):
         self.assertIn("满足", session_duration_notice(8 * 3600 * 5))
         self.assertIn("超过12小时", session_duration_notice(13 * 3600 * 5))
 
+    def test_auto_export_requires_thirty_seconds_in_bed(self) -> None:
+        self.assertFalse(should_auto_export_session(149))
+        self.assertTrue(should_auto_export_session(150))
+
     def test_motion_score_uses_level_and_active_points(self) -> None:
         self.assertEqual(calculate_motion_score(0, 20), 0)
         self.assertEqual(calculate_motion_score(1, 2), 29)
         self.assertEqual(calculate_motion_score(2, 5), 65)
         self.assertEqual(calculate_motion_score(3, 20), 100)
+
+    def test_sleep_quality_score_requires_four_hours(self) -> None:
+        score = calculate_sleep_quality_score(
+            in_bed_frames=3 * 3600 * 5,
+            likely_sleep_frames=2 * 3600 * 5,
+            sleep_interruptions=0,
+            sleep_turns=1,
+            active_ratio=3,
+            breath_valid_ratio=95,
+            breath_output_ratio=90,
+            breath_rates=(16, 17, 17, 18),
+            onset_latency_seconds=600,
+        )
+
+        self.assertFalse(score.available)
+        self.assertIsNone(score.total_score)
+        self.assertIn("不足4小时", score.note)
+
+    def test_sleep_quality_score_reports_components_and_confidence(self) -> None:
+        score = calculate_sleep_quality_score(
+            in_bed_frames=8 * 3600 * 5,
+            likely_sleep_frames=7 * 3600 * 5,
+            sleep_interruptions=1,
+            sleep_turns=10,
+            active_ratio=4,
+            breath_valid_ratio=96,
+            breath_output_ratio=90,
+            breath_rates=(16, 17, 17, 18, 17, 16, 18),
+            onset_latency_seconds=12 * 60,
+        )
+
+        self.assertTrue(score.available)
+        self.assertGreaterEqual(score.total_score or 0, 85)
+        self.assertEqual(score.duration_score, 25)
+        self.assertEqual(score.onset_score, 10)
+        self.assertEqual(score.confidence_label, "高")
+
+    def test_sleep_quality_score_penalizes_fragmentation_and_data_gaps(self) -> None:
+        stable = calculate_sleep_quality_score(
+            in_bed_frames=8 * 3600 * 5,
+            likely_sleep_frames=7 * 3600 * 5,
+            sleep_interruptions=1,
+            sleep_turns=8,
+            active_ratio=4,
+            breath_valid_ratio=90,
+            breath_output_ratio=85,
+            breath_rates=(16, 17, 17, 18, 17),
+            onset_latency_seconds=15 * 60,
+        )
+        fragmented = calculate_sleep_quality_score(
+            in_bed_frames=8 * 3600 * 5,
+            likely_sleep_frames=5 * 3600 * 5,
+            sleep_interruptions=12,
+            sleep_turns=55,
+            active_ratio=25,
+            breath_valid_ratio=90,
+            breath_output_ratio=85,
+            breath_rates=(12, 15, 18, 21, 24),
+            onset_latency_seconds=50 * 60,
+            stream_gap_count=2,
+        )
+
+        self.assertLess(fragmented.total_score or 0, stable.total_score or 0)
+        self.assertLess(fragmented.confidence_percent, stable.confidence_percent)
 
     def test_monitoring_alerts_ignore_normal_warmup(self) -> None:
         alerts = evaluate_monitoring_alerts(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from host_algorithm.heart_rate import HeartRateEstimator, _AntennaPeak, parse_heart_raw_line
+from heart_rate import HeartRateEstimator, _AntennaPeak, parse_heart_raw_line
 
 
 def synthetic_line(

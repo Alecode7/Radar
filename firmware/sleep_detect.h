@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "radar_types.h"
+#include "mmw_type.h"
 
 #define BREATH_WINDOW_SIZE 100
 

@@ -19,6 +19,7 @@ class HeartRawSample:
     active: bool
     in_bed: bool
     target_bin: int
+    selected_antenna: int
     antenna_iq: tuple[tuple[int, int], tuple[int, int], tuple[int, int]]
     sample_rate_hz: int = 5
     bin_iq: tuple[
@@ -97,6 +98,7 @@ def parse_heart_raw_line(line: str, timestamp: float | None = None) -> HeartRawS
         active=bool(fields["A"]),
         in_bed=bool(fields["BED"]),
         target_bin=fields["BIN"],
+        selected_antenna=max(0, min(fields.get("ANT", 0), 2)),
         antenna_iq=center_iq,
         sample_rate_hz=max(1, fields.get("FS", 5)),
         bin_iq=tuple(bin_iq),
