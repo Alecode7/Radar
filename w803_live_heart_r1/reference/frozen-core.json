@@ -1,0 +1,9 @@
+{
+  "base": "w803_live_heart_c4/Algorithm",
+  "unchanged_algorithm_files": {
+    "heart_rate_core.c": "15e4a8671c07e16011dde05923dd3badafdbb980790d7eb2e55aad720b5bbea9",
+    "heart_rate_core.h": "39088176ea3bdb33d9a9a3bdb1b1d808ebaa78e624ae22e8d43f0ca4dea5c6bd",
+    "heart_rate_shared_impl.h": "e5af00375e745ab5bcaf83bce5af0bc49b5607b53cd1d17770981c7956494405"
+  },
+  "note": "Release changes orchestration/default mode only; no floating point or decision-rule edits."
+}

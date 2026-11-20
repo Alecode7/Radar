@@ -671,6 +671,8 @@
         <File Name="../app/inc/sleep_detect.h">
           <FileOption/>
         </File>
+        <File Name="../app/inc/heart_rate_core.h"><FileOption/></File>
+        <File Name="../app/inc/heart_rate_device.h"><FileOption/></File>
       </VirtualDirectory>
       <VirtualDirectory Name="src">
         <File Name="../app/src/main.c">
@@ -679,6 +681,8 @@
         <File Name="../app/src/sleep_detect.c">
           <FileOption/>
         </File>
+        <File Name="../app/src/heart_rate_core.c"><FileOption/></File>
+        <File Name="../app/src/heart_rate_device.c"><FileOption/></File>
       </VirtualDirectory>
     </VirtualDirectory>
   </VirtualDirectory>

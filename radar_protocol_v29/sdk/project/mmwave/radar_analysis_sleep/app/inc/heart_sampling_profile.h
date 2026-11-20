@@ -1,0 +1,16 @@
+#ifndef HEART_SAMPLING_PROFILE_H
+#define HEART_SAMPLING_PROFILE_H
+/* V19 returns to the pre-migration physical 200ms/5Hz radar profile. */
+#define HEART_FAST_PROFILE 0u
+#if HEART_FAST_PROFILE
+#define HEART_RADAR_PERIOD_MS 50u
+#define HEART_SLOW_DIV 4u
+#define HEART_FAST_MARKER "UART_HEART_TARGET_20261110_V18"
+#else
+#define HEART_RADAR_PERIOD_MS 200u
+#define HEART_SLOW_DIV 1u
+#define HEART_FAST_MARKER "UART_FLOW_RSP_20261112_V24"
+#endif
+#define HEART_SLOW_PERIOD_MS (HEART_RADAR_PERIOD_MS * HEART_SLOW_DIV)
+_Static_assert(HEART_SLOW_PERIOD_MS==200u,"Sleep/HR slow cadence must remain200ms");
+#endif

@@ -8,3 +8,9 @@
 *.cdkproj text eol=lf
 *.cdkws text eol=lf
 *.mk text eol=lf
+
+# Release source-lock records hash exact bytes, including original line endings.
+w803_protocol_p1/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+radar_protocol_v29/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+w803_live_heart_r1/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+radar_acquisition_v28/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

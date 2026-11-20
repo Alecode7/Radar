@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="570" viewBox="0 0 1100 570">
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0 L10 3 L0 6 Z" fill="#455a64"/></marker><filter id="s"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-opacity="0.18"/></filter></defs>
+  <rect width="1100" height="570" rx="24" fill="#f4f8fb"/>
+  <text x="48" y="55" font-size="28" font-weight="700" fill="#153449" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">睡眠状态机与迟滞条件</text>
+  <text x="48" y="86" font-size="15" fill="#617d8c" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">所有时间均按当前5 Hz算法处理节拍换算</text>
+  <g filter="url(#s)" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">
+    <rect x="70" y="205" width="205" height="125" rx="23" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+    <text x="172" y="253" text-anchor="middle" font-size="22" font-weight="700" fill="#1e40af">0 离床</text><text x="172" y="284" text-anchor="middle" font-size="14" fill="#315ca8">P=0 / BED=0</text><text x="172" y="308" text-anchor="middle" font-size="13" fill="#5473a3">清空呼吸和睡眠连续量</text>
+    <rect x="335" y="205" width="205" height="125" rx="23" fill="#fee2e2" stroke="#ef4444" stroke-width="3"/>
+    <text x="437" y="253" text-anchor="middle" font-size="22" font-weight="700" fill="#991b1b">1 在床活动</text><text x="437" y="284" text-anchor="middle" font-size="14" fill="#ad3939">高速运动点 ≥ 3</text><text x="437" y="308" text-anchor="middle" font-size="13" fill="#9a5a5a">动作会暂停呼吸/心率估计</text>
+    <rect x="600" y="205" width="205" height="125" rx="23" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+    <text x="702" y="253" text-anchor="middle" font-size="22" font-weight="700" fill="#166534">2 在床安静</text><text x="702" y="284" text-anchor="middle" font-size="14" fill="#27754b">连续安静 ≥ 10秒</text><text x="702" y="308" text-anchor="middle" font-size="13" fill="#4b8065">等待呼吸稳定和睡眠门槛</text>
+    <rect x="865" y="205" width="205" height="125" rx="23" fill="#ede9fe" stroke="#8b5cf6" stroke-width="3"/>
+    <text x="967" y="253" text-anchor="middle" font-size="22" font-weight="700" fill="#5b21b6">3 疑似睡眠</text><text x="967" y="284" text-anchor="middle" font-size="14" fill="#6d41b5">安静 ≥ 5分钟</text><text x="967" y="308" text-anchor="middle" font-size="13" fill="#755c9d">且稳定呼吸 ≥ 1分钟</text>
+  </g>
+  <g stroke="#455a64" stroke-width="3" fill="none" marker-end="url(#a)">
+    <path d="M275 245 H325"/><path d="M540 245 H590"/><path d="M805 245 H855"/>
+    <path d="M600 315 C560 405 430 405 438 340"/><path d="M865 315 C825 420 710 420 704 340"/>
+    <path d="M865 230 C760 115 530 115 458 195"/><path d="M335 300 C295 420 160 420 170 340"/>
+  </g>
+  <g font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" font-size="13" fill="#455a64">
+    <text x="300" y="230" text-anchor="middle">动作进入1.6秒</text><text x="565" y="230" text-anchor="middle">安静10秒</text><text x="830" y="230" text-anchor="middle">安静+呼吸</text>
+    <text x="515" y="401" text-anchor="middle">重新活动</text><text x="790" y="430" text-anchor="middle">短时呼吸丢失容错20秒</text><text x="655" y="111" text-anchor="middle">翻身/醒来动作</text><text x="245" y="430" text-anchor="middle">离床确认4.8秒</text>
+  </g>
+  <rect x="75" y="485" width="950" height="48" rx="13" fill="#e5edf2"/>
+  <text x="550" y="515" text-anchor="middle" font-size="14" fill="#405767" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif">翻身不是单帧脉冲：需要“睡前安静 → 持续动作 → 恢复安静/呼吸”，并带30秒冷却。</text>
+</svg>

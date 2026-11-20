@@ -1,0 +1,61 @@
+{
+  "firmware": "W803_HEART_R1_V1.0.0_ROTATE16_20261119",
+  "passed": 17,
+  "checks": [
+    "boot_transport_snapshot_engine_workspace_and_publication_default_to_rotate16",
+    "mode_1_preserved_after_event_1_old_result_isolated",
+    "mode_1_preserved_after_event_2_old_result_isolated",
+    "mode_1_preserved_after_event_3_old_result_isolated",
+    "mode_1_preserved_after_event_4_old_result_isolated",
+    "mode_0_preserved_after_event_1_old_result_isolated",
+    "mode_0_preserved_after_event_2_old_result_isolated",
+    "mode_0_preserved_after_event_3_old_result_isolated",
+    "mode_0_preserved_after_event_4_old_result_isolated",
+    "mode_1_preserved_after_bed_exit_and_new_source_generation",
+    "mode_0_preserved_after_bed_exit_and_new_source_generation",
+    "switch_from_mode_1_rejects_inflight_old_result_and_rebuilds_core",
+    "switch_from_mode_0_rejects_inflight_old_result_and_rebuilds_core",
+    "power_cycle_default_is_rotate16_after_explicit_direct_session",
+    "current1781_release_default_matches_frozen_c2_rotation_56_bytes",
+    "earlier1072_release_default_matches_frozen_c2_rotation_56_bytes",
+    "historical1812_release_default_matches_frozen_c2_rotation_56_bytes"
+  ],
+  "default": "ROTATE16",
+  "reanchor": 16,
+  "precision": "double",
+  "replays": {
+    "current1781": {
+      "samples": 1781,
+      "estimates": 72,
+      "new_accepts": 13,
+      "result_bytes": 56,
+      "bit_differences_from_frozen_rotate16": 0,
+      "result_sha256": "7462b59b8f5f29e4131f1b11c3ede82a3e813e910b431484c9e0906a22cb9f8e"
+    },
+    "earlier1072": {
+      "samples": 1072,
+      "estimates": 44,
+      "new_accepts": 13,
+      "result_bytes": 56,
+      "bit_differences_from_frozen_rotate16": 0,
+      "result_sha256": "a0864b36bdfdcb7830d8159bea5686edcabd140b8a2ef68082ede699473a39a3"
+    },
+    "historical1812": {
+      "samples": 1812,
+      "estimates": 73,
+      "new_accepts": 17,
+      "result_bytes": 56,
+      "bit_differences_from_frozen_rotate16": 0,
+      "result_sha256": "e791a8a50ed0a320a614ac6d2d92c77251358ba6b0879300b309122ecc8df40b"
+    }
+  },
+  "frozen_rotation_dll": {
+    "path": "D:\\MRS6130\\w803_live_heart_c2\\native-output\\rotation.dll",
+    "sha256": "fe65c198654f67cbada2ebdf074dc764fc8e35a8fab0af1009faabb409fd65f9"
+  },
+  "direct_fallback_suite": "snapshot-verification.json",
+  "receive_lifecycle_suite": "native-verification.json",
+  "scope": "PC native build and recorded-input regression. No board timing or accuracy validation.",
+  "serial_opened": false,
+  "flashed": false
+}

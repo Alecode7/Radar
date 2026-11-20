@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-20",
+  "software_delivery_complete": true,
+  "board_validated": false,
+  "serial_opened": false,
+  "flashed": false,
+  "firmware_w803": "W803_PROTOCOL_P1_20261120",
+  "firmware_radar": "UART_RADAR_PROTOCOL_20261120_V29",
+  "checks": {
+    "native-verification.json": 19,
+    "snapshot-verification.json": 17,
+    "release-verification.json": 17,
+    "protocol-verification.json": 33,
+    "mcu-client-verification.json": 12,
+    "storage-verification.json": 5,
+    "runtime-verification.json": 10,
+    "python-client-verification.json": 4,
+    "radar_stream": 12
+  },
+  "software_check_total": 129,
+  "gui_widget_creation_passed": true,
+  "recorded_iq_frames": 4665,
+  "rotation_estimates": 189,
+  "rotation_differences_from_frozen": 0,
+  "native_power_cut_positions": 80,
+  "native_corrupt_storage_bits": 640,
+  "requests": 21,
+  "push_types": 3,
+  "heart_core_files_unchanged": true,
+  "preserved_radar_functions": {
+    "human_motion_default_config": "84802c21ef0a840664bc922adda9440aaeabcf3d3aeab7e719b99e72f620ccd4",
+    "sleep_detect_stabilize_breath_rate": "55050fc152ced85c008d4cade6a58f170aa321a31744ca1a400ab3a44149ed00",
+    "sleep_detect_update_breath_phase": "f898e64e984051666699a463df7eb2883cfbcd1c3c605b75b0e9916bf5e546d0",
+    "sleep_detect_update": "eadb90d815ad46b2851210f21b5e95f189f8fa37cd45a7c6fd5e585445f02c8b",
+    "sleep_detect_set_mount": "5eb87e59faf08fee24260b431fb2f761d419a3b0ddd23132464424f311002f94",
+    "sleep_detect_disable_mount": "3cd240645e3ce8fe57dbcf6112649a1a9810726745ad35c3b5a1f9531dbfaa04",
+    "sleep_detect_is_point_in_bed_zone": "8498e4e981087e5d57f61eb1e5d86b32a661d532bc4e7e3aef77b2dce713b7fa",
+    "sleep_breath_phase_sample_get": "f7a43239bb660e3cfbdbac6f91163babc8172cd85c028ff7713fb06be662e1bb",
+    "sleep_heart_raw_sample_get": "f91b05855fcaa379e9a34abd313231d8b9f7003c484fb4667636f25016a39cc5",
+    "cmd_mmw_start": "e48afd86a299803ab1eb9cffc2398855b770a2e0c16eb0ab696edc93d24dad56",
+    "cmd_mmw_stop": "23cb76b2e138e749a7e547ae10d4ae08a81ae4b3cbc1f83e9c04addf9044d61f",
+    "cmd_mmw_report": "169896afe035f8ab746e6596c29f41ba4a56b5265259d4b0e11ee0c9e6c157cd",
+    "sleepcfg_is_stopped": "098266cc6be157210e385ddb79f00193477b24e3f29fc6f650a963f4f1074921"
+  },
+  "calibration_sources_unchanged": [
+    "subsys/mmw/mmw_algorithm/mmw_alg_ant_calibration.c",
+    "subsys/mmw/mmw_algorithm/mmw_alg_ant_calibration.h",
+    "platform/utils/img_cfg_template.yml",
+    "project\\mmwave\\radar_analysis_sleep\\app\\inc\\prj_config.h"
+  ],
+  "radar_breath_change": "Qualified-estimate metadata only, public output math unchanged.",
+  "old_r1_source_hashes_unchanged": true,
+  "old_v28_sdk_hashes_unchanged": 1335,
+  "w803_sram_mapped_bytes": 98288,
+  "w803_sram_region_bytes": 163840,
+  "radar_sram_mapped_bytes": 261120,
+  "radar_sram_total_bytes": 301056,
+  "product_port": "W803 UART1 J1 TX/PB6 RX/PB7, 115200 8N1",
+  "pending_board_checks": [
+    "Dedicated UART electrical/byte stability",
+    "Actual sensor control and installation readback",
+    "NVS save then power-cycle readback and power-cut qualification",
+    "Boot identity across real resets",
+    "P1 traffic concurrent with ROTATE16 timing and long runtime",
+    "Company mainboard integration"
+  ],
+  "accuracy_verified": false,
+  "images": [
+    {
+      "path": "D:\\MRS6130\\w803_protocol_p1\\release\\W803_PROTOCOL_P1_20261120.fls",
+      "bytes": 183236,
+      "sha256": "b4d93032dd74b2c6f8ae8624ae9e972f7d72da2896289ba6c443c2f6f55fbca9",
+      "modified_local": "2026-11-20T11:16:25"
+    },
+    {
+      "path": "D:\\MRS6130\\radar_protocol_v29\\release\\RS6130_V29_PROTOCOL_20261120.img",
+      "bytes": 282448,
+      "sha256": "04f6df13dc4a41ae1f4867368aa47cb762808a62784c7324c1cecce0e5ca20db",
+      "modified_local": "2026-11-20T11:16:33"
+    }
+  ]
+}

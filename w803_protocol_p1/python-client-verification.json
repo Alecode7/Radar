@@ -1,0 +1,7 @@
+{
+  "tests": 4,
+  "passed": true,
+  "failures": 0,
+  "errors": 0,
+  "scope": "Actual GUI Python client and parser to actual C protocol service through an in-memory serial substitute."
+}

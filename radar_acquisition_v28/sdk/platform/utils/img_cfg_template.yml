@@ -1,0 +1,140 @@
+base-conf:
+    app-section-max-size: 0x80000
+    bootloader-section-size: 0x4000
+    data-storage-size: 0x2000
+    fix-sram-map: false
+    flash-max-size: 0K
+    head-size: 0x20
+    sram-base-addr: 0x400400
+    sram-max-size: 294k
+boot-img:
+    enter-point: 0x0
+    img-id: 0x0
+    in-file: boot_iram.bin
+    load-ram-address: 0x0
+    merge: true
+    name: minboot
+    out-file: psdfboot.img
+    pack: false
+    store-dir: bootloader
+    version: 0.0.0
+flash-list-img:
+    cpu-id: cpusf
+    img-id: 0xf
+    in-file: spiflash_list.bin
+    merge: true
+    name: spiflash_list
+    out-file: spiflash_list.img
+    pack: false
+    store-dir: spiflash
+    version: 1.0.0
+merge-img:
+    cpu-id: cpusf
+    img-id: 0x1
+    in-file: merge.img
+    m_version: 0.0.0
+    name: mrs6130_p1812
+    out-file: merge.img
+    r_version: '0.0'
+    remap-address:
+    -   offset: 0x400400
+        run-address: 0x500000
+        size: 0x13280
+        type: sram-ibus-cpus
+    -   offset: 0x41ac00
+        run-address: 0x10500000
+        size: 0x25080
+        type: sram-dbus-cpus
+    -   offset: 0x1000
+        run-address: 0x9000000
+        size: 0x26000
+        type: xip
+    -   offset: 0x413680
+        run-address: 0x580000
+        size: 0x6c80
+        type: sram-ibus-cpusf
+    -   offset: 0x41a300
+        run-address: 0x10580000
+        size: 0x900
+        type: sram-dbus-cpusf
+    -   offset: 0x27000
+        run-address: 0x9c00000
+        size: 0x19000
+        type: xip
+    subimg-load:
+    -   offset: 0x1000
+    -   offset: 0x27000
+    version: 2.0.6
+mmw-customer-cfg-img:
+    cpu-id: cpusf
+    img-id: 0xd
+    in-file: customer_cfg.bin
+    merge: false
+    name: customer-cfg
+    out-file: customer_cfg.img
+    pack: false
+    version: 1.0.0
+sub-imgs:
+-   cpu-id: cpus
+    enter-point: 0x500000
+    img-id: 0x2
+    in-file: cpus.bin
+    merge: true
+    move-address:
+    -   run-address: 0x500000
+        size: 0x13240
+        subimg-offset: 0x11cd4
+    -   run-address: 0x10500000
+        size: 0xd78
+        subimg-offset: 0x24f14
+    name: cpus
+    out-file: cpus.img
+    pack: true
+    remap-address:
+    -   offset: 0x400400
+        run-address: 0x500000
+        size: 0x13280
+        type: sram-ibus-cpus
+    -   offset: 0x41ac00
+        run-address: 0x10500000
+        size: 0x25080
+        type: sram-dbus-cpus
+    -   offset: 0x1000
+        run-address: 0x9000000
+        size: 0x26000
+        type: xip
+    start-run: true
+    store-dir: sys
+    version: 1.0.0+0
+-   cpu-id: cpusf
+    enter-point: 0x580000
+    img-id: 0x5
+    in-file: none
+    merge: true
+    move-address:
+    -   run-address: 0x580000
+        size: 0x6c60
+        subimg-offset: 0x11c10
+    -   run-address: 0x10580000
+        size: 0x46c
+        subimg-offset: 0x18870
+    name: b'mmw_ctrl'
+    out-file: D:\MRS6130\RS6x_7x_mmWave_sdk_V2.0.6\Software_Kit\02_SDK\psdf_sdk\project\mmwave\radar_analysis_sleep\cdk_6130_1812_xip_cpus_sleep\Obj\mmw_ctrl.img
+    pack: false
+    remap-address:
+    -   offset: 0x413680
+        run-address: 0x580000
+        size: 0x6c80
+        type: sram-ibus-cpusf
+    -   offset: 0x41a300
+        run-address: 0x10580000
+        size: 0x900
+        type: sram-dbus-cpusf
+    -   offset: 0x27000
+        run-address: 0x9c00000
+        size: 0x19000
+        type: xip
+    start-run: false
+    version: 1.0.0+502879794
+z-dbg-info:
+-   key: value

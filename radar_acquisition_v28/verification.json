@@ -1,0 +1,45 @@
+{
+  "created_local": "2026-11-19T20:28:06",
+  "marker": "UART_RADAR_IQ_20261119_V28",
+  "target_build_passed": true,
+  "source_baseline": "frozen V27 SDK and published image",
+  "source_edits": [
+    "sdk/project/mmwave/radar_analysis_sleep/cdk_6130_1812_xip_cpus_sleep/after_build.sh",
+    "sdk/project/mmwave/radar_analysis_sleep/cdk_6130_1812_xip_cpus_sleep/project.cdkproj",
+    "sdk/project/mmwave/radar_analysis_sleep/cdk_6130_1812_xip_cpus_sleep/radar_analysis_sleep_MRS6130_P1812.mk",
+    "sdk/project/mmwave/radar_analysis_sleep/app/inc/v6_heart_device.h",
+    "sdk/project/mmwave/radar_analysis_sleep/app/src/main.c",
+    "sdk/project/mmwave/radar_analysis_sleep/app/src/v6_heart_device.c"
+  ],
+  "preserved_source_or_library_files": 439,
+  "protected_v27_sdk_files": 1335,
+  "unchanged_pinned_objects": [
+    "src_hal_board.o",
+    "utils_version.o"
+  ],
+  "heart_core_linked": false,
+  "adapter_creates_queue": false,
+  "adapter_creates_worker": false,
+  "adapter_allocates_workspace": false,
+  "wire_schema": "HRIN V=27",
+  "local_queue_flag": "ENQ=0",
+  "compatible_w803": "R1 V1.0.0 parser unchanged",
+  "tests": 12,
+  "recorded_payload_roundtrips": 4665,
+  "payload_field_differences": 0,
+  "sram_mapped_bytes": 260352,
+  "sram_total_bytes": 301056,
+  "v27_sram_mapped_bytes": 294784,
+  "sram_mapping_reduction_bytes": 34432,
+  "image": {
+    "path": "D:\\MRS6130\\radar_acquisition_v28\\release\\RS6130_V28_IQ_STREAM_20261119.img",
+    "bytes": 282448,
+    "sha256": "16077f590cdb927f364ccec8ebfd524708c43e399ee13acacd8e2d022aafbe2d",
+    "last_write_local": "2026-11-19T20:22:16"
+  },
+  "target_realtime_verified": false,
+  "human_accuracy_verified": false,
+  "serial_opened": false,
+  "flashed": false,
+  "calibration_written": false
+}

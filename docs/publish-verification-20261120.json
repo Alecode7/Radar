@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-20",
+  "scope": "GitHub source publication, P1/V29 plus R1/V28 baselines",
+  "protocol": "RSP 1.1 / D0.7; not vendor 5359 compatible",
+  "publication_checkout": "isolated Git worktree",
+  "tests_this_publication": {
+    "product_protocol_client_storage_runtime": 64,
+    "remote_legacy_algorithm_suite": 45,
+    "total": 109
+  },
+  "p1_source_lock_files_verified": 25,
+  "release_and_baseline_files_exact_byte_match": 242,
+  "new_publication_files_whitespace_check": "passed",
+  "inherited_format_warnings": 423,
+  "inherited_format_warning_kinds": {
+    "new blank line at EOF.": 7,
+    "trailing whitespace.": 408,
+    "space before tab in indent.": 8
+  },
+  "inherited_warning_policy": "Preserve original frozen source bytes; all warnings checked against unchanged local originals.",
+  "secrets_scan": "No high-confidence token/private-key pattern found in staged files.",
+  "excluded": "Full vendor SDK distributions, manuals/extracts, captures, runtime logs, toolchains, Python environments, binaries and firmware images.",
+  "serial_opened": false,
+  "flashed": false,
+  "board_acceptance": "pending",
+  "historical_129_check_report": "Retained as original evidence; private fixtures required for full replay."
+}

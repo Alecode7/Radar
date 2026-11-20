@@ -1,0 +1,9 @@
+{
+  "tests": 33,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "native_dll_sha256": "33f975a9c0a72486af82efaf1b13f4af3750b2c5b2d5552e80af1c31273d1b36",
+  "scope": "PC actual C server and radar-control engine against independent Python wire/client reference; no hardware access.",
+  "serial_opened": false
+}

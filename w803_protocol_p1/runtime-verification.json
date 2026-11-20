@@ -1,0 +1,7 @@
+{
+  "tests": 10,
+  "passed": true,
+  "failures": 0,
+  "errors": 0,
+  "scope": "Actual production runtime + snapshot intake + protocol + BSP with memory UART/RTOS mocks; lock-order checks, no real timing/ports."
+}

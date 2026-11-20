@@ -1,0 +1,300 @@
+{
+  "created": "2026-11-13T19:03:28.401665+08:00",
+  "marker": "UART_HEART_CHIP_20261113_V27",
+  "status": "CHIP_ADAPTED_NUMERICS_BOARD_TEST_PENDING_WITH_DECLARED_REFERENCE_DIFFERENCES",
+  "sources": [
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\src\\main.c",
+      "sha256": "e783396bfca064bd72c5ff4ffae6b0af312c29dd735f26560e7ca199837f038e"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\src\\heart_rate_core.c",
+      "sha256": "860c13217bf93b12cfd3c8001d5da5b72523d5a2fb60a0a114f265323d76ee23"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\heart_rate_core.h",
+      "sha256": "3efa427496c242b562a06409e9c46db4af36caa4d8f8e558c73eb3727180a18e"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\heart_rate_shared_impl.h",
+      "sha256": "45ad8327ea152e77903a2a203ca4dd83358741e19bf9b61b4e64068aa489556e"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\heart_rate_numeric_profile.h",
+      "sha256": "7ed3b9122911878cdf77a06ab04d44815b7ec721c69ea74a8449086d889b29e8"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\src\\v6_heart_device.c",
+      "sha256": "ee942f36186c80ef83dca34cbe18acc13d5296c3b880cc9460eefdd15665747d"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\v6_heart_device.h",
+      "sha256": "41c3652f3c0c8a6d0785555db0c6d679dc417606f837f262ed674b74650943da"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\cdk_6130_1812_xip_cpus_sleep\\project.cdkproj",
+      "sha256": "8374fd21428570b32db5eacb3d8f8fa64c5b2caebabcdb5329bd642408a8da52"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\build-safe.mk",
+      "sha256": "8e57ec4365ac85bde48ad64cc7c861f374ffedbac62fe995ddce84ae2b3e0491"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\build_chip.ps1",
+      "sha256": "2e5ebb774c245201c192db83f5584610f0de4a57bbf645bc29b3dbb052aa1311"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\prj_config.h",
+      "sha256": "958e751265164905a46cbdce398abd9ffccb40d468b0a62315629872b80ab8f0"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\sleep_detect.h",
+      "sha256": "817707e728d592f59d87779532c3c83228f9959171d9377dcd9dc4d35f1d89b6"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\src\\sleep_detect.c",
+      "sha256": "c310d7fe7d6cc025edfeb1c83d2d1937e0fff6aeebd9a596b879de93e56ac549"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\hr_migration_clock.h",
+      "sha256": "72f4c0c6c65931a9994fcef491ac27cf762a39748ea002522862c5118eb0e040"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\hr_migration_clock_impl.h",
+      "sha256": "ebb5be5e9bd55cb15866b90f2147fe386a0166e36be977ab6d08d287299c1101"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\project\\mmwave\\radar_analysis_sleep\\app\\inc\\heart_clock_capture.h",
+      "sha256": "4d110c55309f5b42705beabc49ab97e2807a79992efaad82cb3fbe1a6c3bcfbc"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\subsys\\mmw\\mmw_cmd_sleep\\src\\mmw_report.c",
+      "sha256": "9f56ca1763de993b767961d5f566a1e7a18bf90e371b710e856458b1c448dbfb"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\subsys\\mmw\\mmw_cmd\\src\\mmw_shell.c",
+      "sha256": "5552c855620f8bb487e2072a7f0295c4368e1be09f0df401562917186124f4aa"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\subsys\\shell\\letter_shell\\src\\shell_port.c",
+      "sha256": "9a5eb12a58682a81b662fb9c0d751b7d0e589ea93f9a735f8555213897b958ff"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\subsys\\mmw\\mmw_algorithm\\mmw_alg_ant_calibration.c",
+      "sha256": "10c8e929f38eae4a4c366bcf68bdb742aab13e18d11438075c8aeec1dce0a9f8"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\subsys\\mmw\\mmw_algorithm\\mmw_alg_ant_calibration.h",
+      "sha256": "c1737402072f5a4bf44ff5f0bf0555dd9d297b1eeb870c7f6ac833d44ab83576"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\sdk\\platform\\utils\\img_cfg_template.yml",
+      "sha256": "ffccac1611dac528261deed9f053ca3135dde8bcd4d2b36fa05a2fca3cc1103d"
+    }
+  ],
+  "host": [
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\app.py",
+      "sha256": "fd5c59cba426f74d1c4f809de50c61fd789ce9c8b7805b790254ed1c82195776"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\calibration_store.py",
+      "sha256": "9325b45f1dcade9bd6829d4b18d7b036ca6d88378c1a7ece9d8746f880c633ec"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\ch347_cfg_dump.py",
+      "sha256": "8697fa92af13f92cde08b7613b5d8dde20491d10862880c1c3c5151a12971fe5"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\ch347_spi.py",
+      "sha256": "20770598abf3a24832c412880cf5319c8c91b90348e04d11f98896c293ad540a"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\device_heart.py",
+      "sha256": "d7b984c266ac8bfae9b5a97373aa330e4de2d61d412a4a21b8594849037985f0"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\heart_rate.py",
+      "sha256": "abf33867d87c35a74de68a39f405306ac32d29db8db44b5eb4ba7b61212e9ceb"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\hif_spi.py",
+      "sha256": "29375ee4bd425d592071cf59b388a556918cd3b360354da8837ae47af6d53319"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\hif_verify.py",
+      "sha256": "53bf24c6e3eb11b4bf3510273a3f321349369125d4179e831b525a3c732efbee"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\main.py",
+      "sha256": "fa73e21841400fdfb76b24559d10bfc8059a3dd6e6dbda6839d054a31fc23429"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\monitor_dashboard.py",
+      "sha256": "26eb75207432239752484d02dc7c7e559e2ab8cc56c228245590cd3a2a08758f"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\mount_config.py",
+      "sha256": "c5b2d09cc646c5cb4f3a048fc25358515c7476ca34291b661243c92d5ca94f65"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\overnight_recorder.py",
+      "sha256": "59d3be285a849158f04e678f167b1fa9c345e04e2eb4d5ea58ceaf1627aa2465"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\parsers.py",
+      "sha256": "6ffa656c958239bff6eabf78485467a95f8b8579f82320c20215b273f52a21f8"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\phase_waveform.py",
+      "sha256": "6211f2c46124a0f0484b04bdfb576da99fb03d41af560dd9e7b7102cad0c685c"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\plot_latest_session.py",
+      "sha256": "d4b2c509da018c5ea8cddfd9821298f0e8507416700684451f968082a8940d46"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\plot_latest_sleep_test.py",
+      "sha256": "a00d48173c5cf7788ab89e595f5411ad9613d806b56092744e903be3609547db"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\replay_window.py",
+      "sha256": "e57bf1b0814258cc82bdfd7a59e779282ecbe1bd8494393b0a197e2ff2d9482a"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\serial_service.py",
+      "sha256": "4049e7104a7028def239b75cf1a7f759bb893dc01ed5f3f270090a29a8659ff9"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\session_export.py",
+      "sha256": "fefd91d0625c4853976720f4306a4d92c612b0f88cd5dea17f76cc388d7557fc"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\session_metrics.py",
+      "sha256": "1eac80014ba60fe664eb62f98245c19427f48f2c72003061b43e310c534fcefb"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\sleep_report.py",
+      "sha256": "08c621b0eecfb59f5f0e3a341d4d7d606be25444efae3f7d665440d4dd48d4d5"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\spi_probe.py",
+      "sha256": "d60a14d52e5b8d78076e7678d23c41f4841853938c983b6dec65124baeac2611"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\spi_service.py",
+      "sha256": "13cd16a4527096ede44dbf3d839e6d9b29206da088852d5c2eea60d7d118cd3d"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\stream_decoder.py",
+      "sha256": "a61141ca42ec4e368877f382e1b9f97a6e74d368960c96ee32f4e50342ff688b"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\target_position.py",
+      "sha256": "1ab22d4dfce1265ed3bfd56297c77fbd7f6fc9e051dfa5499f4fe1c636198152"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_app_commands.py",
+      "sha256": "0fe9e13d9818f5454ee0c5b412f7784e7c537aa364511d0bd7af1ec33bee9890"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_calibration_integration.py",
+      "sha256": "d074d838fbf26a0fb3d2e80d295c5a9bbb97fa73a7089838de360aaf6f1701c8"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_calibration_store.py",
+      "sha256": "bb2fe2ab697687be16c0ff38f8536dce7247d1dc8a240d9f90d6e5f0b09f570f"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_heart_rate.py",
+      "sha256": "b913e438df1b56510ec6329d8869a137fa8a96965c160ef2121ebdb7493d3511"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_monitor_integration.py",
+      "sha256": "5be21985474072ba818f1597e2040256358b1dc972aca1f8520372ad34c0cffe"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_mount_config.py",
+      "sha256": "d4d049e7d40881622a8f87c2d6afdc04f4f9d865b896860915adefa725f4214d"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_mount_integration.py",
+      "sha256": "cbb9b978c73c6830d497d1c8a8d20f9c3a79a9fd8d8a2413921a09a962a9dae5"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_overnight_recorder.py",
+      "sha256": "098cfd42e644b343691d3f41d617b9458f36a87598c702d4c82c8eb0e430ee37"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_phase_waveform.py",
+      "sha256": "4001ed18a00ca3f91eddb3da58bb742dff296401871d259ead9624ef10009cad"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_report_integration.py",
+      "sha256": "513d0f04f8ac25ea1e882016c2163849357948ece13ef744c11dc903bbca5d87"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_session_export.py",
+      "sha256": "9f729bfd4eccdbca61d30a5bdbec9954afd662f6d1abdbe9b32199d03ad5884c"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_session_metrics.py",
+      "sha256": "99a3e0fb3c7f4dc4f02c45cacdba1042ca88d3d1e24079812f84190c3a68e9f0"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_sleep_report.py",
+      "sha256": "faa5c6969994cd06bdbc14bd9e77d6648bc8bc1885eb5afad428e51aa71628c2"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\test_target_position.py",
+      "sha256": "419300a70cf382c3caf9f0371af0b7c21df71199e630fb64613181df57482535"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\vital_display.py",
+      "sha256": "a5fa0f1b5ba84043d0e2b250bf33c9e55546382255e2a42aacf6bbf5f389b47e"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\__init__.py",
+      "sha256": "d60148c76af5adb7a132271eb9e90a67bbcdf2156bf8b339402a181b3ad51aa1"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\host-v27\\host_app\\__main__.py",
+      "sha256": "f52469f98c3b4a11b173a0e14885dc0cb2a0184740566de8059e7dac138f8d3d"
+    }
+  ],
+  "images": [
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\deliverable\\mrs6130_p1812_before_hr_migration_v6.img",
+      "bytes": 278352,
+      "sha256": "43fa0f6a902835c4fc6fa5e5ac80b8a6d0b9a6e6f6beb42b1732d81505640132",
+      "last_write_time_local": "2026-10-29T15:48:44.097219+08:00"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\deliverable\\mrs6130_p1812_return_current_v24.img",
+      "bytes": 323408,
+      "sha256": "971d7c4e960c43ae95dacc240ed54c2e579502c68e6c687d004f59ad73a2b5b5",
+      "last_write_time_local": "2026-11-12T16:48:05.529320+08:00"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\deliverable\\mrs6130_p1812_v6_chip_f32_v27.img",
+      "bytes": 315216,
+      "sha256": "0c4f7db2ff9d991350873e05b35437e4cef8e761e92846657986f8669fd09364",
+      "last_write_time_local": "2026-11-13T18:59:27.423415+08:00"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\deliverable\\mrs6130_p1812_v6_shared_double_v26.img",
+      "bytes": 315216,
+      "sha256": "95c1b1d918bdc935dfada1855a3e9d29a8354a6ea4f467e321fbb799b01ea204",
+      "last_write_time_local": "2026-11-13T17:05:35.627011+08:00"
+    },
+    {
+      "path": "D:\\REA\\workspace\\heart-chip-adapt-v27-20261113\\deliverable\\mrs6130_p1812_v6_strict_diagnostic_v25.img",
+      "bytes": 307024,
+      "sha256": "16a1d56ec79ecbfc8d8db41c2d13ca886bdb48f17ea584cbfb1d23ff9c8cbc88",
+      "last_write_time_local": "2026-11-13T14:44:49.895973+08:00"
+    }
+  ],
+  "oracle_sha256": "abf33867d87c35a74de68a39f405306ac32d29db8db44b5eb4ba7b61212e9ceb",
+  "selected_backend": 1,
+  "numerical_identity_to_original": false
+}

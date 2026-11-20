@@ -1,0 +1,81 @@
+{
+  "passed": 17,
+  "checks": [
+    "current1781_nominal_direct_matches_original",
+    "earlier1072_nominal_direct_matches_original",
+    "historical1812_nominal_direct_matches_original",
+    "snapshot_not_changed_by_concurrent_receiver_updates",
+    "ring_overwrite_and_request_coalescing_do_not_reset_source_epoch",
+    "stop_during_math_prevents_publication",
+    "source_restart_before_commit_rejects_old_result",
+    "budget_abort_is_explicit_discontinuity",
+    "reading_or_republishing_held_value_does_not_renew_accepted_age",
+    "transport_silence_marks_published_value_noncurrent",
+    "explicit_mode_change_does_not_start_stopped_radar_or_reuse_old_history",
+    "comparison_copy_does_not_mutate_live_confirmation_state",
+    "missing_required_recent_history_explicitly_resets_math_and_invalidates_publication",
+    "stop_discard_is_separate_from_overload_request_coalescing",
+    "slow_math_keeps_sampling_and_confirmation_state_without_fifo_reset",
+    "unprocessed_inputs_older_than_75_seconds_can_retire_without_resetting_confirmation",
+    "local_age_wrap_preserves_cross_clock_subtraction_contract"
+  ],
+  "replays": {
+    "current1781": {
+      "samples": 1781,
+      "estimates": 72,
+      "full_result_bytes": 56,
+      "bit_differences": 0,
+      "math_resets": 1
+    },
+    "earlier1072": {
+      "samples": 1072,
+      "estimates": 44,
+      "full_result_bytes": 56,
+      "bit_differences": 0,
+      "math_resets": 1
+    },
+    "historical1812": {
+      "samples": 1812,
+      "estimates": 73,
+      "full_result_bytes": 56,
+      "bit_differences": 0,
+      "math_resets": 1
+    }
+  },
+  "simulations": {
+    "six_second_worker": {
+      "injected_cost_ms": 6000,
+      "received": 1781,
+      "requested": 72,
+      "computed": 61,
+      "skipped": 11,
+      "retired_old_inputs": 0,
+      "required_history_losses": 0,
+      "math_resets": 1,
+      "max_pending": 1,
+      "scope": "Injected delay model; selected update schedule differs from complete original 5-second schedule"
+    },
+    "ninety_second_worker": {
+      "injected_cost_ms": 90000,
+      "received": 1812,
+      "requested": 73,
+      "computed": 6,
+      "skipped": 67,
+      "retired_old_inputs": 199,
+      "required_history_losses": 0,
+      "math_resets": 1,
+      "max_pending": 1,
+      "scope": "Injected delay model; selected update schedule differs from complete original 5-second schedule"
+    }
+  },
+  "sizes": {
+    "transport": 15352,
+    "engine": 47456,
+    "snapshot": 15032,
+    "report": 120,
+    "status": 100
+  },
+  "test_mode": "explicit_DIRECT_fallback",
+  "release_default": "ROTATE16",
+  "board_execution_verified": false
+}

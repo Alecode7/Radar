@@ -1,46 +1,77 @@
-# Local agent and editor state
+# Local agent/editor state and machine-specific environments
 /.agents/
 /.codex/
+/.skill-staging/
 .vscode/
 .idea/
-
-# Vendor SDK, installers, drivers, manuals and reference bundles
-/RS6x_7x_mmWave_sdk_V2.0.6/
+/tools/
+/tmp/
+/work/
+/w803_sdk/
 /cdk-windows-V2.24.11-20250612-1933/
 /睡眠探测参考/
-*.zip
-*.ZIP
-*.7z
-*.pdf
+/协议参考/
+/芯片资料/
+/芯片文档/
+/技术说明/
+/协议交付_20261120/
+/w803_gui_project/
+/w803_hr_bench*/
+/w803_live_heart_c*/
+/w803_live_rx_r1/
+/w803_radar_link_l1/
 
-# Firmware build products and generated metadata
+# Full vendor SDK is local; previously tracked custom files remain tracked
+/RS6x_7x_mmWave_sdk_V2.0.6/
+
+# Generated build products, firmware images and SDK packaging intermediates
+**/build/
+**/native-output/
+**/build-logs/
+**/release/
+**/packaging-preserved/
 **/Obj/
 **/Lst/
 **/output/
 **/.cache/
 **/.cdk/
+*.zip
+*.ZIP
+*.7z
+*.pdf
+*.fls
 *.img
+*.bin
 *.elf
 *.map
 *.asm
 *.o
+*.obj
+*.a
+*.dll
+*.lib
+*.exp
 *.d
 
-# Python environments, caches and test output
+# Third-party manual extracts and private captures
+**/reference/vendor/
+**/logs/
+**/board-tests/
+**/fixtures/
+*.log
+*.csv
+*.jsonl
+mrs6130_sleep_*.txt
+mrs6130_session_*.csv
+
+# Python and OS state
 **/__pycache__/
 **/.pytest_cache/
 **/.mypy_cache/
 **/.ruff_cache/
+*.py[cod]
 .venv/
 venv/
-*.py[cod]
-
-# Runtime logs and exported sessions
-*.log
-mrs6130_sleep_*.txt
-mrs6130_session_*.csv
-
-# Local configuration and OS files
 .env
 .env.*
 !.env.example

@@ -1,0 +1,47 @@
+{
+  "passed": 12,
+  "checks": [
+    "clock_init_failure_does_not_enable_stream",
+    "initialization_waits_for_explicit_start",
+    "real_source_timestamp_iq_extremes_flags_and_br_decode_in_unchanged_r1_parser",
+    "motion_bit_and_positive_breath_hold_match_v27_contract",
+    "bed_exit_changes_generation_and_clears_breath_context",
+    "stop_blocks_input_start_isolates_history_without_resetting_lifetime_counter",
+    "runtime_clock_fault_and_null_iq_do_not_emit_fake_samples",
+    "source_uint32_wrap_is_preserved_without_replacing_it_with_receive_time",
+    "stream_diagnostic_is_rate_limited_and_never_claims_local_heart_result",
+    "current1781_all_original_payloads_survive_adapter_to_r1_parser",
+    "earlier1072_all_original_payloads_survive_adapter_to_r1_parser",
+    "historical1812_all_original_payloads_survive_adapter_to_r1_parser"
+  ],
+  "replays": {
+    "current1781": {
+      "source": "D:\\MRS6130\\w803_gui_project\\logs\\COM9_2026_11_18.17.13.02.848.txt",
+      "sha256": "e8c39f4e6127d614bf9186b0b10834f7e2924ab0722db4073683bfd3302d4b57",
+      "samples": 1781,
+      "r1_parse_failures": 0,
+      "payload_field_differences": 0,
+      "local_queue_created": false
+    },
+    "earlier1072": {
+      "source": "D:\\MRS6130\\w803_gui_project\\logs\\COM9_2026_11_18.15.29.41.175.txt",
+      "sha256": "3f188463f3d8875511281a0955924d20d6717651c853653024eb827871e19cdb",
+      "samples": 1072,
+      "r1_parse_failures": 0,
+      "payload_field_differences": 0,
+      "local_queue_created": false
+    },
+    "historical1812": {
+      "source": "D:\\MRS6130\\w803_iq_ingest\\fixtures\\radar_v26_capture.txt",
+      "sha256": "a14a419dec3761955e28037cc3e4cfd1f7262ea3bbfa1374615ae710756cedf9",
+      "samples": 1812,
+      "r1_parse_failures": 0,
+      "payload_field_differences": 0,
+      "local_queue_created": false
+    }
+  },
+  "total_recorded_samples": 4665,
+  "scope": "Actual V29 adapter and unchanged P1/R1-compatible parser, PC-host mocked clock; not hardware timing or ADC equivalence.",
+  "serial_opened": false,
+  "flashed": false
+}

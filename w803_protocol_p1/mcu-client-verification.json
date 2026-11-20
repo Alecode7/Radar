@@ -1,0 +1,7 @@
+{
+  "tests": 12,
+  "passed": true,
+  "failures": 0,
+  "errors": 0,
+  "scope": "Actual independent MCU C reference to actual P1 C server, byte-fragmented roundtrips; no UART."
+}

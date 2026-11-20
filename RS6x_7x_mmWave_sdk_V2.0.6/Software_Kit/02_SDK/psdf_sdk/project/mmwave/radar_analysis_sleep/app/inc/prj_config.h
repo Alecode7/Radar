@@ -45,6 +45,7 @@
 #define CONFIG_MMW_CTRL                                     1
 #define CONFIG_MMW_CALIB_DATA_LOAD                          1  // load ant calib data from flash
 #define CONFIG_MMW_DRIVER                                   1
+#define CONFIG_SLEEP_HEART_DEVICE                           1
 #if (CONFIG_MMW_MICRO_POINT_CLOUD)
 #define CONFIG_HEAP_SIZE                                   (1024 * 135)  // 80 + 80K
 #endif

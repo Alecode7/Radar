@@ -1,64 +1,52 @@
-# MRS6130-P1812 睡眠雷达
+# MRS6130 / W803 双芯片睡眠雷达
 
-本仓库保存 MRS6130-P1812 睡眠监测项目的定制核心代码，包括板端固件算法和 Python 调试上位机。厂商完整 SDK、CDK 安装包、驱动、文档、编译中间文件、烧录镜像和测试日志不进入版本控制。
+当前主线：**2026-11-20 W803 P1＋RS6130 V29**。雷达负责5 Hz采集、人员/在床和呼吸；W803负责心率估计、状态与产品协议；PC图形工具用于联调和记录。当前心率方案保留 `double ROTATE16`，每16个频点重新计算旋转起点。
 
-## 当前能力
+**本版软件检查与目标构建已通过，P1/V29尚待实板烧录验收。** 生理数值准确性未经同期参考设备验证，不能将无可靠估计解释为呼吸暂停，也不能用于医疗诊断。
 
-- 人员存在、活动和在床状态检测
-- 床区运动点与微动点分析
-- 呼吸有效性、呼吸率和呼吸状态
-- 在床活动、安静和疑似睡眠状态
-- 翻身、睡眠中断、入离床和会话统计
-- 三天线微动 IQ 原始数据输出
-- 上位机心率候选估计、趋势统计、提醒和 CSV 导出
+## 从哪里开始
 
-上述生命体征和睡眠结果用于工程研发与趋势参考，不作为医疗诊断结果。
+| 目录 | 内容与状态 |
+| --- | --- |
+| [w803_protocol_p1](w803_protocol_p1/README.md) | 当前W803应用：心率、快照、独立UART产品协议、配置存储与事件 |
+| [radar_protocol_v29](radar_protocol_v29/README.md) | 配套雷达定制源码：实际启停/安装回执、呼吸确认元数据、整行异步发送 |
+| [协议D0.7](w803_protocol_p1/protocol/协议D0.7_双芯片产品接口.md) | 外部帧结构、21类请求、3类推送、字段与错误码 |
+| [主板C参考](w803_protocol_p1/protocol/reference/README.md) | 可移植C编解码、会话、超时与重试 |
+| [Host](w803_protocol_p1/Host) | Python线参考与图形联调工具 |
+| [w803_live_heart_r1](w803_live_heart_r1/README.md) / [radar_acquisition_v28](radar_acquisition_v28/README.md) | 2026-11-19实板基线源码，供对照与回退准备 |
+| [构建与验证说明](docs/build-and-verification.md) | 外部SDK、工具链、本机路径和可复现验证边界 |
 
-## 目录
+### 协议兼容性
 
-```text
-RS6x_7x_mmWave_sdk_V2.0.6/Software_Kit/02_SDK/psdf_sdk/
-├─ project/mmwave/radar_analysis_sleep/   P1812 睡眠固件工程
-└─ subsys/mmw/mmw_cmd_sleep/              点云、IQ 与串口上报定制
+当前对外接口为自定义 **RSP 1.1 / D0.7**：`52 53`帧头、显式小端字段、请求序号、CRC16/CCITT-FALSE。R60ABD1手册仅用于功能组织参考；**不兼容厂家`53 59 / SUM / 54 43`帧和厂家上位机**。厂家OTA、睡眠评分和医学分期未实现。
 
-host_app/                                  Python 上位机、协议解析和测试
-```
+协议覆盖能力/身份/会话/保活、结果查询和推送、雷达实际启停确认、安装目标及实际值、RAM配置和显式NVS保存、8类规则事件、事件分页/确认、监护统计。控制完成以雷达实际回执为准；保持值和保活不续测量年龄，低Q/HCON不默认作为新生理阈值证据。
 
-固件文件保持厂商 SDK 中的原始相对路径。克隆代码后，需要准备同版本的 `RS6x_7x_mmWave_sdk_V2.0.6`，再将仓库内受控文件放到对应路径，或直接在相同目录结构中使用。
+## 心率与呼吸处理
 
-## 固件环境
+[W803心率核心](w803_protocol_p1/Algorithm/heart_rate_core.c)使用三天线IQ真实时间戳，经相位展开、去趋势、高通、Hann窗、48—120次/分频谱扫描、天线共识、呼吸谐波检查，再按历史候选确认、平滑、保持和失效规则输出。频谱计算使用双精度沿频率递推并每16点重锚；DIRECT保留作回退。递推与DIRECT在浮点边界处可能作出不同判定，不能宣称两者逐位等价。
 
-- 芯片/模组：MRS6130-P1812
-- SDK：RS6x_7x mmWave SDK V2.0.6
-- CDK：V2.24.11
-- 当前雷达帧周期：200 ms（5 Hz）
-- 当前心率原始数据方案：`SAFEHR5 MICROIQ`
+[采样与计算解耦](w803_protocol_p1/App/snapshot_heart.c)：接收持续维护有界历史，计算获取一致快照，确认状态由计算侧顺序更新；结果携带源时间、完成时间、年龄、质量和谐波标记。正常目标为5秒估计更新，是否接受新心率由原确认规则决定。
 
-CDK 工作区：
+[雷达呼吸与在床算法](radar_protocol_v29/sdk/project/mmwave/radar_analysis_sleep/app/src/sleep_detect.c)负责点云床区过滤、连续确认/迟滞、静止保活、IQ相位展开、自相关呼吸候选和稳定输出。V29仅给合格新呼吸估计添加序号/时间元数据。当前呼吸名义量程12—24次/分，心率频谱48—120次/分；配置报警阈值不扩大量程。
 
-```text
-RS6x_7x_mmWave_sdk_V2.0.6/Software_Kit/02_SDK/psdf_sdk/project/mmwave/
-radar_analysis_sleep/radar_sleep_llx/radar_sleep_llx.cdkws
-```
-
-## 上位机运行
+## 运行联调工具
 
 ```powershell
-python -m pip install -r host_app/requirements.txt
-python -m host_app
+python -m pip install -r w803_protocol_p1/Host/requirements.txt
+python -B w803_protocol_p1/Host/protocol_gui.py
 ```
 
-上位机通过控制串口接收固件输出的 `SLEEP` 和 `HRRAW` 文本。CH347 SPI/HIF 代码保留用于底层点云链路排查。
+窗口启动不连接串口，点击连接后才通信。产品口为W803 UART1六针无数字TX/RX（模块TX=PB6/J1.2，RX=PB7/J1.5），115200 8N1、3.3V逻辑；02组仍用于W803烧录/文本日志。运行时01组由雷达与W803通信，不并接电脑TX。完整连线、启停与保存步骤见各工程README。
 
-## 上位机测试
+## 验证记录与限制
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE='1'
-python -m unittest discover -s host_app -v
-```
+[交付报告](w803_protocol_p1/verification.json)记录129项软件检查：心率接收/快照/模式回归53、协议33、主板C12、存储5、运行桥10、Python客户端4、雷达适配12。包括4665帧历史输入及189次输出回放；它们是已有本机验证记录，不等于克隆仓库后已自动复测。
 
-## 当前已知问题
+原始人体串口日志、历史DLL和对照数据未公开，完整回放需要本地材料。协议、主板客户端、存储和运行桥测试可使用模拟硬件独立执行，见构建说明。真实UART、Flash断电、重启身份、产品通信并行耗时和公司主板接入仍待实板验证。
 
-- 长时间运行时点云上报回调偶尔中断，仍需定位固件回调、内存或通信链路状态。
-- 心率容易受到呼吸谐波、姿态变化和目标距离单元切换影响。
-- 疑似睡眠采用工程规则判断，清醒状态下长时间静卧也可能满足条件。
+## 发布范围与历史目录
+
+本仓库提交自研/定制源码、配置、构建脚本、接口参考、黄金帧和验证记录。厂商完整SDK、工具链、安装包、手册、原始人体数据、日志、虚拟环境和烧录镜像保留在本机，未随本次提交发布。使用者须自行取得相应厂商SDK和工具；`radar_*/sdk`仅为需要覆盖到SDK的定制文件，不是完整SDK。
+
+远程原有`firmware/`、`host_algorithm/`、`tests/`和`docs/*.svg`作为算法精简版保留，其[原说明](docs/algorithm-baseline.md)描述较早实现。`host_app/`和根SDK路径下已受控文件属于早期完整项目快照；当前双芯片开发请从P1/V29入口开始。没有为第三方内容新增或推定许可证。

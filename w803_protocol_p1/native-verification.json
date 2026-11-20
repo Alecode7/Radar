@@ -1,0 +1,29 @@
+{
+  "passed": 19,
+  "checks": [
+    "empty_waits",
+    "duplicate_not_added",
+    "local_silence_diagnostic_keeps_history",
+    "bed_exit_blocks_old_generation",
+    "new_generation_can_start",
+    "manual_stop_start_isolation",
+    "missing_emitted_sequence_clears_history",
+    "sampling_frame_gap_is_not_emitted_sequence_loss",
+    "source_clock_frame_sequence_rollback_isolated",
+    "source_and_local_uint32_time_wrap",
+    "ambiguous_sleep_does_not_keep_valid_history",
+    "bounded_ordered_snapshot_and_capacity",
+    "real_current_capture_1072_with_source_gaps_and_stop",
+    "snapshot_preserves_all_source_fields_and_iq",
+    "historical_1812_frame_capture_supported",
+    "contradictory_duplicate_cannot_reuse_history",
+    "frame_wrap_starts_new_epoch",
+    "version_banner_invalidates_old_snapshot",
+    "io_fault_invalidates_history"
+  ],
+  "state_bytes": 15068,
+  "status_bytes": 80,
+  "heart_compute": false,
+  "serial_opened": false,
+  "flashed": false
+}

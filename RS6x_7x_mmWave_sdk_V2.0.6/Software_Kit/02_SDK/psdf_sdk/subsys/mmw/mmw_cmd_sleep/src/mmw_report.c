@@ -19,8 +19,23 @@
 #include "mmw_alg_micro_cube.h"
 #include "mmw_point_cloud_psic_lib.h"
 #include "sleep_detect.h"
+#include "heart_rate_device.h"
+#include "heart_iq_capture.h"
+#include "heart_sampling_profile.h"
+#include "heart_fast_frontend.h"
+#include "heart_fast_packet.h"
 #include <math.h>
 #include <stdio.h>
+#include "sleep_async_log.h"
+#define printf sleep_trace_printf
+#include "heart_target_window.h"
+#include "heart_raw_record.h"
+#include "heart_clock_capture.h"
+#include "hr_migration_clock.h"
+/* Owned by the single data callback; HFF is copied before HRRAW reuses it. */
+static char s_fast_line[448];
+static bool s_fast_input_valid;
+static uint16_t s_fast_input_bin;
 
 
 #ifndef MIN
@@ -45,6 +60,9 @@ static bool s_sleep_breath_target_valid;
 static uint16_t s_sleep_breath_target_range_idx;
 static bool s_sleep_heart_target_valid;
 static uint16_t s_sleep_heart_target_range_idx;
+/* Match the PC estimator's last positive BR from the SLEEP status stream.
+ * Do not silently replace that input with a newer per-frame BR mid-interval. */
+static uint8_t s_sleep_heart_breath_reference;
 
 #if (CONFIG_MMW_MICRO_POINT_CLOUD)
 extern uint8_t g_micro_point_en;
@@ -894,6 +912,75 @@ static SLEEP_BREATH_PHASE_SAMPLE sleep_breath_phase_sample_get(uint16_t range_id
 	return sample;
 }
 
+static bool sleep_heart_capture_read(void *context,uint16_t range_idx,int16_t iq[6])
+{
+	uint16_t chirps=*(const uint16_t *)context;
+	uint16_t first=0,end=0;
+	complex16_cube *source;
+	if (micro_cube_range_get(&first,&end)!=MMW_ERR_CODE_SUCCESS || range_idx<first || range_idx>=end ||
+		micro_cube_chirp_num_get()!=chirps) return false;
+	source=micro_cube_chirps_get(range_idx);
+	if (source==NULL || chirps==0) return false;
+	for (uint32_t ant=0;ant<3;ant++) {
+		iq[ant*2]=source[ant*chirps+chirps-1].real;
+		iq[ant*2+1]=source[ant*chirps+chirps-1].imag;
+	}
+	return true;
+}
+
+#if !HEART_FAST_PROFILE
+static void sleep_heart_capture_report(uint32_t frame_idx,uint16_t selected)
+{
+	static char line[HR_IQ_CAPTURE_BUFFER_BYTES];
+	static uint32_t last_error_ms;
+	const SleepDetectResult *status=sleep_detect_get_result();
+	HeartRateDeviceResult device;
+	uint16_t range_first=0,range_end=0,first,end,chirps=micro_cube_chirp_num_get();
+	uint8_t flags=1u|(status->in_bed?2u:0u)|(status->is_active?4u:0u);
+	size_t length=0;
+	heart_rate_device_get(&device);
+	/* The SDK accessor itself does not check the upper range bound. Respect
+	 * its [range_first,range_end) contract BEFORE reading any bin. */
+	if (micro_cube_range_get(&range_first,&range_end)==MMW_ERR_CODE_SUCCESS && range_end>range_first && chirps>0) {
+		first=range_first>4u?range_first:4u;
+		end=range_end<28u?range_end:28u;
+		if (first>=end) { first=range_first;end=(uint16_t)MIN((uint32_t)range_end,(uint32_t)first+HR_IQ_CAPTURE_MAX_BINS); }
+		length=hr_iq_capture_encode(line,sizeof(line),device.generation,frame_idx,device.report_ms,
+			flags,first,(uint16_t)(end-first),range_first,range_end,selected,sleep_heart_capture_read,&chirps);
+	}
+	if (length>0) printf("%s",line);
+	else if ((uint32_t)(device.report_ms-last_error_ms)>=5000u) {
+		last_error_ms=device.report_ms;
+		printf("HRIQERR V=1 GEN=%lu F=%lu R0=%u R1=%u CHIRPS=%u\r\n",
+			(unsigned long)device.generation,(unsigned long)frame_idx,range_first,range_end,chirps);
+	}
+}
+#endif
+
+#include "rsp_result.h"
+static void sleep_heart_device_feed(uint32_t frame_idx,const SLEEP_BREATH_PHASE_SAMPLE *sample)
+{
+#if CONFIG_SLEEP_HEART_DEVICE
+	s_fast_input_valid=sample->valid;s_fast_input_bin=sample->range_idx; /* diagnostic copy only */
+	const SleepDetectResult *result=sleep_detect_get_result();
+	int16_t iq[6];
+	for (uint32_t ant=0;ant<3;ant++) {
+		iq[ant*2]=sample->antenna_real[ant];iq[ant*2+1]=sample->antenna_imag[ant];
+	}
+	heart_rate_device_submit(frame_idx,sample->range_idx,sample->valid,result->is_active,
+	                         result->in_bed,s_sleep_heart_breath_reference,iq);
+	heart_rate_device_emit_pending();
+	rsp_result_runtime_update();
+	/* Same cached micro-cube / last-chirp source as the original HRIN, read
+	 * immediately into a checked line. Formal HR input was already copied. */
+#if !HEART_FAST_PROFILE
+	sleep_heart_capture_report(frame_idx,sample->range_idx);
+#endif
+#else
+	(void)frame_idx;(void)sample;
+#endif
+}
+
 #if SLEEP_HEART_SAFE_REPORT_ENABLE
 static void sleep_heart_safe_report(uint32_t frame_idx,
 						 const SLEEP_BREATH_PHASE_SAMPLE *sample)
@@ -904,26 +991,14 @@ static void sleep_heart_safe_report(uint32_t frame_idx,
 		return;
 	}
 
-	printf("HRRAW F=%lu FS=5 V=1 P=%u A=%u BED=%u BIN=%u ANT=%u I=%d Q=%d AMP=%lu PH=%ld DPH=%d",
-	       (unsigned long)frame_idx,
-	       result->has_person,
-	       result->is_active,
-	       result->in_bed,
-	       sample->range_idx,
-	       sample->antenna_idx,
-	       sample->real,
-	       sample->imag,
-	       (unsigned long)sample->amplitude,
-	       (long)sample->phase_mrad,
-	       result->breath_phase_delta_mrad);
-	for (uint32_t ant_idx = 0; ant_idx < MMW_ANT_CHANNEL_NUM; ++ant_idx) {
-		printf(" I%lu=%d Q%lu=%d",
-		       (unsigned long)ant_idx,
-		       sample->antenna_real[ant_idx],
-		       (unsigned long)ant_idx,
-		       sample->antenna_imag[ant_idx]);
-	}
-	printf("\r\n");
+	HeartRawRecord row;int length;
+	_Static_assert(MMW_ANT_CHANNEL_NUM==3u,"Legacy HRRAW requires the configured RS6130 1T3R");
+	row.frame=frame_idx;row.person=result->has_person;row.active=result->is_active;row.bed=result->in_bed;
+	row.bin=sample->range_idx;row.antenna=sample->antenna_idx;row.real=sample->real;row.imag=sample->imag;
+	row.amplitude=sample->amplitude;row.phase=sample->phase_mrad;row.delta=result->breath_phase_delta_mrad;
+	for(unsigned a=0;a<3u;a++) {row.iq[2u*a]=sample->antenna_real[a];row.iq[2u*a+1u]=sample->antenna_imag[a];}
+	length=hrraw_encode(s_fast_line,sizeof(s_fast_line),&row);
+	if(length>0)sleep_trace_record(s_fast_line,(size_t)length);
 }
 #endif
 
@@ -1067,8 +1142,176 @@ int mmw_micro_point_handle(uint32_t range_idx, int veloc_idx,
 }
 #endif
 
+/*
+ * Diagnostic reflection position, not a person classification or a tracked target.
+ * Called only at the existing SLEEP report cadence, independently of P/BED.
+ * Prefer micro points for a stationary body; use motion only without micro data.
+ * All signed user-coordinate values are accepted. Never modify the input points.
+ * Score at most 16 evenly spaced seeds against the first 256 source points:
+ * O(16 * min(source_n, 256)), at most 4096 point/seed comparisons per report.
+ * Average only the winning seed's 45 cm spherical neighborhood, not the cloud.
+ * N counts that neighborhood within the scanned prefix, not all source points.
+ * Scalar locals only (well below 1 KB); no allocation or persistent target state.
+ */
+static void sleep_target_diagnostic_report(const Detection3D_Data *data)
+{
+	enum { MAX_POINTS = 256, MAX_SEEDS = 16, RADIUS_CM = 45 };
+	const PointCloud3D *points = data->micro_points;
+	const char *source = "MICRO";
+	uint16_t source_n = data->micro_points_num;
+	uint16_t scan_n, seed_n;
+	uint16_t best_count = 0;
+	int32_t best_snr = 0;
+	int32_t best_x = 0, best_y = 0, best_z = 0;
+
+	if (points == NULL || source_n == 0) {
+		points = data->motion_points;
+		source_n = data->motion_points_num;
+		source = "MOTION";
+	}
+	if (points == NULL || source_n == 0) {
+		printf("TARGET V=0\r\n");
+		return;
+	}
+
+	scan_n = MIN(source_n, MAX_POINTS);
+	seed_n = MIN(scan_n, MAX_SEEDS);
+	for (uint16_t seed = 0; seed < seed_n; ++seed) {
+		uint16_t seed_idx = seed_n > 1 ?
+			(uint16_t)((uint32_t)seed * (scan_n - 1U) / (seed_n - 1U)) : 0;
+		const PointCloud_Cart *center = &points[seed_idx].cart;
+		uint16_t count = 0;
+		int32_t snr = 0;
+		int32_t sum_x = 0, sum_y = 0, sum_z = 0;
+
+		for (uint16_t i = 0; i < scan_n; ++i) {
+			const PointCloud_Cart *point = &points[i].cart;
+			int32_t dx = (int32_t)point->x - center->x;
+			int32_t dy = (int32_t)point->y - center->y;
+			int32_t dz = (int32_t)point->z - center->z;
+
+			/* Bound each delta before squaring: safe over the full int16 range. */
+			if (dx < -RADIUS_CM || dx > RADIUS_CM ||
+			    dy < -RADIUS_CM || dy > RADIUS_CM ||
+			    dz < -RADIUS_CM || dz > RADIUS_CM) {
+				continue;
+			}
+			if (dx * dx + dy * dy + dz * dz > RADIUS_CM * RADIUS_CM) {
+				continue;
+			}
+			++count;
+			snr += point->snr;
+			sum_x += point->x;
+			sum_y += point->y;
+			sum_z += point->z;
+		}
+		/* Equal support: prefer higher summed SNR; exact ties keep the first seed. */
+		if (count > best_count || (count == best_count && snr > best_snr)) {
+			best_count = count;
+			best_snr = snr;
+			best_x = sum_x;
+			best_y = sum_y;
+			best_z = sum_z;
+		}
+	}
+
+	/* Every seed supports itself, so best_count is nonzero for any source data. */
+	printf("TARGET V=1 X=%d Y=%d Z=%d N=%u SRC=%s\r\n",
+	       (int)(best_x / best_count),
+	       (int)(best_y / best_count),
+	       (int)(best_z / best_count),
+	       (unsigned int)best_count, source);
+}
+
+#if HEART_FAST_PROFILE
+/* The vendor helper keeps the same gain normalization as the micro cache.
+ * It needs the micro-cube antenna setup, so fast reads wait for cube_ready. */
+extern void mmw_fft_ants_auto_gain(complex16_cube *buffer,uint16_t interval_id,uint16_t range_idx);
+static HfFrontend s_fast_front;
+static uint32_t s_fast_rf,s_fast_gen,s_fast_reads,s_fast_errors,s_fast_max_ms,s_fast_last_warning;
+static uint16_t s_fast_first=13u,s_fast_mask;
+static HeartTargetWindow s_fast_target;
+static volatile bool s_fast_reset_pending=true;
+/* Owned only by the data callback. Keep acquisition scratch off its stack. */
+static struct {
+    HeartRateDeviceResult device;
+    complex16_cube ants[MMW_ANT_CHANNEL_NUM];
+    int16_t iq[18];int32_t phase[9];uint32_t meta[14];
+} s_fast_sample;
+static struct {
+    uint32_t read,filter,encode,enqueue,slow,callback,overruns;
+} s_fast_cost;
+static uint32_t sleep_fast_now(void) {
+	return (uint32_t)(((uint64_t)xTaskGetTickCount()*1000u)/configTICK_RATE_HZ);
+}
+static __xip_text uint32_t sleep_fast_hw_hi(void) {return csi_coret_get_valueh();}
+static __xip_text uint32_t sleep_fast_hw_lo(void) {return (uint32_t)csi_coret_get_value();}
+static void sleep_fast_reset(void) {
+	/* Shell requests a reset; only the data callback owns filter memory. */
+	taskENTER_CRITICAL();s_fast_reset_pending=true;taskEXIT_CRITICAL();
+}
+static void sleep_fast_apply_reset(void) {
+	bool pending;
+	taskENTER_CRITICAL();pending=s_fast_reset_pending;s_fast_reset_pending=false;taskEXIT_CRITICAL();
+	if(!pending)return;
+	hf_reset(&s_fast_front);s_fast_rf=0;s_fast_gen=0;s_fast_reads=0;s_fast_errors=0;
+	s_fast_max_ms=0;s_fast_last_warning=0;s_fast_first=13u;s_fast_mask=0;
+	ht_init(&s_fast_target);s_fast_input_valid=false;s_fast_input_bin=0u;
+	memset(&s_fast_cost,0,sizeof(s_fast_cost));
+}
+static void sleep_fast_warning(unsigned code,uint32_t value) {
+	uint32_t now=sleep_fast_now();s_fast_errors++;
+	if(s_fast_errors==1u || now-s_fast_last_warning>=5000u) {
+		s_fast_last_warning=now;
+		printf("HFFWAIT V=1 CODE=%u VALUE=%lu RF=%lu\r\n",code,(unsigned long)value,(unsigned long)s_fast_rf);
+	}
+}
+static void sleep_fast_capture(void) {
+	const SleepDetectResult *result=sleep_detect_get_result();
+	HeartRateDeviceResult *device=&s_fast_sample.device;
+	int16_t *iq=s_fast_sample.iq;int32_t *phase=s_fast_sample.phase;uint32_t *meta=s_fast_sample.meta;
+	uint16_t ranges=0,dopplers=0;uint32_t start=sleep_fast_now(),sample_ms=start,stage,elapsed;
+	bool auto_gain,any=false;unsigned b,a;int length;
+	if(!micro_cube_ready()) {sleep_fast_warning(1u,0u);return;}
+	mmw_fft_num_get(&ranges,&dopplers);
+	if(ranges<3u || !dopplers) {sleep_fast_warning(2u,ranges);return;}
+	s_fast_first=s_fast_target.first;
+	if((uint32_t)s_fast_first+3u>ranges)s_fast_first=(uint16_t)(ranges-3u);
+	auto_gain=mmw_fft_autogain_get()!=0u;
+	if(mmw_motion_cube_access_open()!=MMW_ERR_CODE_SUCCESS) {sleep_fast_warning(3u,0u);return;}
+	stage=sleep_fast_now();
+	for(b=0;b<3u;b++) {
+		complex16_cube *ants=s_fast_sample.ants;
+		if(auto_gain)mmw_fft_ants_auto_gain(ants,dopplers>>1,(uint16_t)(s_fast_first+b));
+		else __mmw_fft_ants(ants,dopplers>>1,(uint16_t)(s_fast_first+b));
+		for(a=0;a<3u;a++) {
+			iq[(b*3u+a)*2u]=ants[a].real;iq[(b*3u+a)*2u+1u]=ants[a].imag;
+			if(ants[a].real || ants[a].imag)any=true;
+		}
+	}
+	mmw_motion_cube_access_close();elapsed=sleep_fast_now()-stage;
+	if(elapsed>s_fast_cost.read)s_fast_cost.read=elapsed;
+	heart_rate_device_get(device);
+	if(s_fast_gen!=device->generation) {hf_reset(&s_fast_front);s_fast_gen=device->generation;}
+	stage=sleep_fast_now();s_fast_mask=hf_push(&s_fast_front,sample_ms,s_fast_first,iq,phase);
+	if(!s_fast_target.locked) {s_fast_mask=0u;memset(phase,0,sizeof(s_fast_sample.phase));}
+	elapsed=sleep_fast_now()-stage;if(elapsed>s_fast_cost.filter)s_fast_cost.filter=elapsed;
+	meta[0]=1u;meta[1]=device->generation;meta[2]=s_fast_rf;meta[3]=D_State_test.proc_frame_num;meta[4]=sample_ms;
+	meta[5]=auto_gain?2u:1u;meta[6]=20u;meta[7]=5u;
+	meta[8]=(any?1u:0u)|(result->in_bed?2u:0u)|(result->is_active?4u:0u);
+	meta[9]=s_fast_first;meta[10]=3u;meta[11]=hf_slow_due(s_fast_rf)?1u:0u;meta[12]=s_fast_mask;meta[13]=s_fast_front.gaps;
+	stage=sleep_fast_now();length=hff_encode(s_fast_line,sizeof(s_fast_line),meta,iq,phase);
+	elapsed=sleep_fast_now()-stage;if(elapsed>s_fast_cost.encode)s_fast_cost.encode=elapsed;
+	stage=sleep_fast_now();
+	if(length>0 && sleep_trace_record(s_fast_line,(size_t)length)==length)s_fast_reads++;
+	else sleep_fast_warning(4u,0u);
+	elapsed=sleep_fast_now()-stage;if(elapsed>s_fast_cost.enqueue)s_fast_cost.enqueue=elapsed;
+	start=sleep_fast_now()-start;if(start>s_fast_max_ms)s_fast_max_ms=start;
+}
+#endif
+
 /* The callback function when 2D-FFT finished in point cloud application */
-int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
+static int sleep_slow_point_cb(void *mmw_data, void *arg)
 {
 	if (!s_sleep_report_cb_seen) {
 		s_sleep_report_cb_seen = true;
@@ -1127,6 +1370,9 @@ int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
 				}
 				mmw_frame_get(&frame_period, &dummy);
 				frame_period = frame_period * mmw_micro_frame_rate_get();
+#if HEART_FAST_PROFILE
+				frame_period *= HEART_SLOW_DIV;
+#endif
 				g_micro_arg.coordinate_cart = mmw_coordinate_get();
 				g_micro_arg.micro_range_unit = (range_mm<<4)/10/range_fft_num;
 				g_micro_arg.micro_veloc_unit = (5*100<<7)/(frame_period * micro_dop_num);
@@ -1193,8 +1439,12 @@ int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
 				                                 breath_phase_sample.amplitude);
 			}
 			sleep_heart_safe_report(D_State_test.proc_frame_num, &breath_phase_sample);
+			sleep_heart_device_feed(D_State_test.proc_frame_num, &breath_phase_sample);
 			if (sleep_process_frame && sleep_detect_should_report()) {
 				const SleepDetectResult *sleep_result = sleep_detect_get_result();
+				if (!sleep_result->in_bed) s_sleep_heart_breath_reference=0;
+				else if (sleep_result->breath_rate>0) s_sleep_heart_breath_reference=sleep_result->breath_rate;
+				sleep_target_diagnostic_report(&D_data_test);
 				printf("SLEEP P=%u A=%u BED=%u BV=%u BR=%u SS=%u SQ=%u SA=%u SB=%u MI=%u TE=%u TC=%u STC=%u BT=%lu OT=%lu BE=%u BX=%u BVR=%u ABR=%u BS=%u AT=%lu QT=%lu ST=%lu LQ=%lu SL=%lu SC=%u LS=%lu SI=%u AR=%u QR=%u SR=%u RVR=%u SE=%u BRmin=%u BRmax=%u MP=%u MCP=%u Bbin=%u Bph=%d Bpd=%d Bamp=%lu Bpq=%u\r\n",
 				       sleep_result->has_person,
 				       sleep_result->is_active,
@@ -1315,8 +1565,12 @@ int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
 			                                 breath_phase_sample.amplitude);
 		}
 		sleep_heart_safe_report(D_State_test.proc_frame_num, &breath_phase_sample);
+		sleep_heart_device_feed(D_State_test.proc_frame_num, &breath_phase_sample);
 		if (sleep_process_frame && sleep_detect_should_report()) {
 			const SleepDetectResult *sleep_result = sleep_detect_get_result();
+			if (!sleep_result->in_bed) s_sleep_heart_breath_reference=0;
+			else if (sleep_result->breath_rate>0) s_sleep_heart_breath_reference=sleep_result->breath_rate;
+			sleep_target_diagnostic_report(&D_data_test);
 			printf("SLEEP P=%u A=%u BED=%u BV=%u BR=%u SS=%u SQ=%u SA=%u SB=%u MI=%u TE=%u TC=%u STC=%u BT=%lu OT=%lu BE=%u BX=%u BVR=%u ABR=%u BS=%u AT=%lu QT=%lu ST=%lu LQ=%lu SL=%lu SC=%u LS=%lu SI=%u AR=%u QR=%u SR=%u RVR=%u SE=%u BRmin=%u BRmax=%u MT=%u MB=%u McT=%u McB=%u Act=%u PP=%u PA=%u BP=%u BA=%u BrP=%u BrA=%u Bsig=%u Bq=%u Bper=%u Brc=%u Brr=%u Brs=%u Bbin=%u Bph=%d Bpd=%d Bamp=%lu Bpq=%u\r\n",
 			       sleep_result->has_person,
 			       sleep_result->is_active,
@@ -1404,7 +1658,91 @@ int mmw_ctrl_data_point_report_cb(void *mmw_data, void *arg)
 	return 0;
 }
 
+int mmw_ctrl_data_point_report_cb(void *mmw_data,void *arg) {
+#if HEART_FAST_PROFILE
+	uint32_t begin=sleep_fast_now(),actual_period=0,frames=0,stage,elapsed;
+	MmwPsicMimoRxNum_t mimo;
+	sleep_fast_apply_reset();s_fast_rf++;
+	mmw_frame_get(&actual_period,&frames);mmw_psic_lib_sdk_get_tx_rx_num(&mimo);
+	if(actual_period!=HEART_RADAR_PERIOD_MS || mimo.ant_tx_num!=1u || mimo.ant_rx_num!=3u || mimo.mimo_rx_num!=3u) {
+		if(actual_period!=HEART_RADAR_PERIOD_MS)sleep_fast_warning(5u,actual_period);
+		else sleep_fast_warning(6u,((uint32_t)mimo.ant_tx_num<<16)|((uint32_t)mimo.ant_rx_num<<8)|mimo.mimo_rx_num);
+		mmw_psic_auto_gain_clear();
+		if(g_dc_suppression_flag && !s_mmw_radar_analysis_skip_frame_status)mmw_psic_dc_suppression_update();
+		return 0;
+	}
+	if(!s_mmw_radar_analysis_skip_frame_status)sleep_fast_capture();
+	stage=sleep_fast_now();
+	if(hf_slow_due(s_fast_rf)) {
+		s_fast_input_valid=false;
+		sleep_slow_point_cb(mmw_data,arg);
+		{
+			const SleepDetectResult *r=sleep_detect_get_result();uint16_t ranges=0,dopplers=0;
+			mmw_fft_num_get(&ranges,&dopplers);
+			unsigned event=ht_update(&s_fast_target,r->in_bed,r->is_active,
+				s_fast_input_valid,s_fast_input_bin,ranges);
+			if(event) {
+				uint32_t gaps=s_fast_front.gaps;hf_reset(&s_fast_front);s_fast_front.gaps=gaps;s_fast_mask=0u;
+				if(r->in_bed || (event&HT_EXIT)) {
+					heart_rate_device_get(&s_fast_sample.device);
+					printf("HFTARGET V=1 GEN=%lu RF=%lu SF=%lu EPOCH=%lu EVENT=%u TARGET=%u FIRST=%u LOCK=%u STREAK=%u MISSING=%u\r\n",
+						(unsigned long)s_fast_sample.device.generation,(unsigned long)s_fast_rf,(unsigned long)D_State_test.proc_frame_num,
+						(unsigned long)s_fast_target.epoch,event,s_fast_target.target,s_fast_target.first,
+						s_fast_target.locked,s_fast_target.streak,s_fast_target.missing);
+				}
+			}
+		}
+		elapsed=sleep_fast_now()-stage;if(elapsed>s_fast_cost.slow)s_fast_cost.slow=elapsed;
+	} else {
+		mmw_psic_auto_gain_clear();
+		if(g_dc_suppression_flag && !s_mmw_radar_analysis_skip_frame_status)mmw_psic_dc_suppression_update();
+	}
+	elapsed=sleep_fast_now()-begin;if(elapsed>s_fast_cost.callback)s_fast_cost.callback=elapsed;
+	if(elapsed>=HEART_RADAR_PERIOD_MS)s_fast_cost.overruns++;
+	if(s_fast_rf%100u==0u) {
+		SleepTraceStats log;sleep_trace_get(&log);
+		printf("HFSTAT V=1 GEN=%lu RF=%lu READ=%lu ERR=%lu GAP=%lu MAXMS=%lu MASK=%u LOCK=%u FRONT_BYTES=%u STACK=%lu LOGQ=%lu LOGHIGH=%lu LOGDROP=%lu LOGBYTES=%lu LOGFMT=%lu LOGSTACK=%lu\r\n",
+			(unsigned long)s_fast_gen,(unsigned long)s_fast_rf,(unsigned long)s_fast_reads,(unsigned long)s_fast_errors,
+			(unsigned long)s_fast_front.gaps,(unsigned long)s_fast_max_ms,s_fast_mask,s_fast_target.locked?1u:0u,(unsigned)sizeof(s_fast_front),
+			(unsigned long)(uxTaskGetStackHighWaterMark(NULL)*sizeof(StackType_t)),
+			(unsigned long)log.used,(unsigned long)log.high,(unsigned long)log.refused,(unsigned long)log.refused_bytes,
+			(unsigned long)log.format_refused,(unsigned long)log.stack_free);
+		printf("HFCOST V=1 GEN=%lu RF=%lu READ=%lu FILTER=%lu ENCODE=%lu ENQUEUE=%lu SLOW=%lu CALLBACK=%lu OVERRUN=%lu\r\n",
+			(unsigned long)s_fast_gen,(unsigned long)s_fast_rf,(unsigned long)s_fast_cost.read,(unsigned long)s_fast_cost.filter,
+			(unsigned long)s_fast_cost.encode,(unsigned long)s_fast_cost.enqueue,(unsigned long)s_fast_cost.slow,
+			(unsigned long)s_fast_cost.callback,(unsigned long)s_fast_cost.overruns);
+		{
+			uint32_t hi,lo,t0=(uint32_t)xTaskGetTickCount(),t1;
+			hc_read(sleep_fast_hw_hi,sleep_fast_hw_lo,&hi,&lo);t1=(uint32_t)xTaskGetTickCount();
+			printf("HFCLOCK V=1 GEN=%lu RF=%lu SF=%lu T0=%lu T1=%lu THZ=%lu MS=%lu HI=%lu LO=%lu CPUHZ=%lu\r\n",
+				(unsigned long)s_fast_gen,(unsigned long)s_fast_rf,(unsigned long)D_State_test.proc_frame_num,
+				(unsigned long)t0,(unsigned long)t1,(unsigned long)configTICK_RATE_HZ,
+				(unsigned long)(((uint64_t)t0*1000u)/configTICK_RATE_HZ),
+				(unsigned long)hi,(unsigned long)lo,(unsigned long)configCPU_CLOCK_HZ);
+		}
+	}
+	return 0;
+#else
+	static uint32_t callbacks,max_cost;uint32_t begin=hr_clock_now_ms(),elapsed;
+	int ret=sleep_slow_point_cb(mmw_data,arg);
+	elapsed=hr_clock_now_ms()-begin;if(elapsed>max_cost)max_cost=elapsed;
+	if(++callbacks%25u==0u) {
+		HrClockSnapshot clock;SleepTraceStats log;hr_clock_snapshot(&clock);sleep_trace_get(&log);
+		printf("HRPORT V=1 F=%lu HRMS=%lu OSMS=%lu HI=%lu LO=%lu HZ=%lu FAULT=%lu CBMAX=%lu STACK=%lu LOGQ=%lu LOGHIGH=%lu LOGDROP=%lu LOGFMT=%lu LOGSTACK=%lu\r\n",
+			(unsigned long)D_State_test.proc_frame_num,(unsigned long)clock.ms,(unsigned long)clock.os_ms,
+			(unsigned long)clock.hi,(unsigned long)clock.lo,(unsigned long)clock.hz,(unsigned long)clock.fault,
+			(unsigned long)max_cost,(unsigned long)(uxTaskGetStackHighWaterMark(NULL)*sizeof(StackType_t)),
+			(unsigned long)log.used,(unsigned long)log.high,(unsigned long)log.refused,
+			(unsigned long)log.format_refused,(unsigned long)log.stack_free);
+	}
+	return ret;
+#endif
+}
+
 void radar_analysis_reset_skip_frame_status(void) {
+#if HEART_FAST_PROFILE
+	sleep_fast_reset();
+#endif
 	s_mmw_radar_analysis_skip_frame_status = RADAR_ANALYSIS_SKIP_FRAME_NUM;
 	s_sleep_report_cb_seen = false;
 	s_sleep_process_seen = false;
@@ -1412,6 +1750,8 @@ void radar_analysis_reset_skip_frame_status(void) {
 	s_sleep_breath_target_range_idx = 0;
 	s_sleep_heart_target_valid = false;
 	s_sleep_heart_target_range_idx = 0;
+	s_sleep_heart_breath_reference = 0;
 	sleep_detect_reset();
+	heart_rate_device_reset();
 	printf("SLEEP_REPORT_ARM skip=%u\r\n", s_mmw_radar_analysis_skip_frame_status);
 }

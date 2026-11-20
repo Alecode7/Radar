@@ -1,0 +1,1 @@
+#define WM_ERR_SUCCESS 0

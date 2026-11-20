@@ -1,0 +1,7 @@
+{
+  "tests": 5,
+  "passed": true,
+  "interrupted_write_positions": 80,
+  "corrupted_record_bits": 640,
+  "scope": "Actual W803 BSP journal logic with mocked NVS/RNG/UART; not real Flash power-cut or entropy qualification."
+}

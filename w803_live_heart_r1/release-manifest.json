@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "project": "D:\\MRS6130\\w803_live_heart_r1",
+  "firmware_id": "W803_HEART_R1_V1.0.0_ROTATE16_20261119",
+  "packaged_local_time": "2026-11-19T20:12:40",
+  "default_mode": "ROTATE16",
+  "reanchor": 16,
+  "precision": "double",
+  "automatic_comparison": false,
+  "shared_reduction_enabled": false,
+  "direct_runtime_fallback": true,
+  "radar_firmware": "existing V27 retained",
+  "serial_opened": false,
+  "flashed": false,
+  "engineering_checks": 53,
+  "recorded_replay_samples_per_mode": 4665,
+  "recorded_replay_estimates_per_mode": 189,
+  "rotation_scope": "Matches frozen ROTATE16 PC DLL; not numerical equivalence to DIRECT.",
+  "board_scope": "No R1 board run yet. C4 had one 300-sample shadow ROTATE16 timing of 2132 ms.",
+  "pending": [
+    "R1 single-mode continuous board timing and recovery",
+    "Synchronous-reference accuracy"
+  ],
+  "application_compile_units": 7,
+  "linked_automatic_comparison_symbols": false,
+  "source_hashes": {
+    "Algorithm/heart_rate_core.c": "15e4a8671c07e16011dde05923dd3badafdbb980790d7eb2e55aad720b5bbea9",
+    "Algorithm/heart_rate_core.h": "39088176ea3bdb33d9a9a3bdb1b1d808ebaa78e624ae22e8d43f0ca4dea5c6bd",
+    "Algorithm/heart_rate_shared_impl.h": "e5af00375e745ab5bcaf83bce5af0bc49b5607b53cd1d17770981c7956494405",
+    "App/snapshot_heart.c": "fd15a2a2374cfc63573c82d077ca5f2c1ff7837dff3ee85b4c00914edf1641af",
+    "App/snapshot_heart.h": "c4b81754d118b2fcc00eb9d2472e3fee3be51eafd7145cdb57f1df8e9e960078",
+    "BSP/board_uart.c": "ce8b56f61a8105fdf7da36667ec59f3bfac6100bb743cb7f36fc1fa0e9833828",
+    "BSP/board_uart.h": "190654d22eccea50edbc25edc40daaa5c963eedb610771196a3715f4447d2bb1",
+    "CMakeLists.txt": "1d6f2580357f51becdf8e9f52de60a268413324cc40cf156bbf0c39d2951ed8d",
+    "Config/board_config.h": "573c591c96ca19d0f84ac5bf2d1d21110e6d430c9f09d419681c6dabbafcd854",
+    "device_table.toml": "3b4c559ea009ee053e8d1fbca5718265b637375ef4cd74ffaa6148e138dfbcaa",
+    "Drivers/link_stream.c": "f1db163edcbfd3c9d0cc3c5b704ff02b380252466f45ad2cdd38c3ee1bfca174",
+    "Drivers/link_stream.h": "fcf1d5f2ed1a8f62b9366f5157627cd1840b82728babb19c9ccb3545ee5ae6f0",
+    "Drivers/radar_iq.c": "c352cab8e6e01b98bba808da1e533c3689b00471bed6ecd184c865eba5c852fe",
+    "Drivers/radar_iq.h": "d0e93a3c864a6555180efcde48ec0ba3eb7d042ed6a700b1275e221163e92e88",
+    "Drivers/rx_state.c": "258bd48a2b3232cdfb9c04c89723729aaf7ac64dd872319cc78fd10a18a6ed07",
+    "Drivers/rx_state.h": "89eaf5f8a6281704c758de619f781184d52fe0566d2e4f1f8c2fbd0b3307dbde",
+    "main/CMakeLists.txt": "1d76c916cdb8036703ed9e2f63a32fd388d22da7c1c05632d27fe98be9a37d63",
+    "main/src/main.c": "e5add4b6fb7ef5fedc756827ff2a26612c189346744827b2dcf41d5c112b950d",
+    "prj.config": "125197c0179625bfef1a6f2b4ab493e85b53b47f7f0ae823c91739a1acc5810b"
+  },
+  "package_source_hashes": {
+    ".vscode/extensions.json": "36f5fc762598a547f37bd201a0debb9408d1fd99fa9e30728bd2a29d15706efc",
+    ".vscode/settings.json": "acd33514637be99025d8a6ecef1f0a31aa25b716f83e9e7fd9c024ed1aab1b6b",
+    ".vscode/tasks.json": "324ddb8eeb2aa755d5843acbd10a0f5859c9c2bbe1267f04b94aacc3a866cb77",
+    "Algorithm/heart_rate_core.c": "15e4a8671c07e16011dde05923dd3badafdbb980790d7eb2e55aad720b5bbea9",
+    "Algorithm/heart_rate_core.h": "39088176ea3bdb33d9a9a3bdb1b1d808ebaa78e624ae22e8d43f0ca4dea5c6bd",
+    "Algorithm/heart_rate_shared_impl.h": "e5af00375e745ab5bcaf83bce5af0bc49b5607b53cd1d17770981c7956494405",
+    "App/snapshot_heart.c": "fd15a2a2374cfc63573c82d077ca5f2c1ff7837dff3ee85b4c00914edf1641af",
+    "App/snapshot_heart.h": "c4b81754d118b2fcc00eb9d2472e3fee3be51eafd7145cdb57f1df8e9e960078",
+    "BSP/board_uart.c": "ce8b56f61a8105fdf7da36667ec59f3bfac6100bb743cb7f36fc1fa0e9833828",
+    "BSP/board_uart.h": "190654d22eccea50edbc25edc40daaa5c963eedb610771196a3715f4447d2bb1",
+    "CMakeLists.txt": "1d6f2580357f51becdf8e9f52de60a268413324cc40cf156bbf0c39d2951ed8d",
+    "Config/board_config.h": "573c591c96ca19d0f84ac5bf2d1d21110e6d430c9f09d419681c6dabbafcd854",
+    "device_table.toml": "3b4c559ea009ee053e8d1fbca5718265b637375ef4cd74ffaa6148e138dfbcaa",
+    "Drivers/link_stream.c": "f1db163edcbfd3c9d0cc3c5b704ff02b380252466f45ad2cdd38c3ee1bfca174",
+    "Drivers/link_stream.h": "fcf1d5f2ed1a8f62b9366f5157627cd1840b82728babb19c9ccb3545ee5ae6f0",
+    "Drivers/radar_iq.c": "c352cab8e6e01b98bba808da1e533c3689b00471bed6ecd184c865eba5c852fe",
+    "Drivers/radar_iq.h": "d0e93a3c864a6555180efcde48ec0ba3eb7d042ed6a700b1275e221163e92e88",
+    "Drivers/rx_state.c": "258bd48a2b3232cdfb9c04c89723729aaf7ac64dd872319cc78fd10a18a6ed07",
+    "Drivers/rx_state.h": "89eaf5f8a6281704c758de619f781184d52fe0566d2e4f1f8c2fbd0b3307dbde",
+    "main/CMakeLists.txt": "1d76c916cdb8036703ed9e2f63a32fd388d22da7c1c05632d27fe98be9a37d63",
+    "main/src/main.c": "e5add4b6fb7ef5fedc756827ff2a26612c189346744827b2dcf41d5c112b950d",
+    "prj.config": "125197c0179625bfef1a6f2b4ab493e85b53b47f7f0ae823c91739a1acc5810b",
+    "README.md": "b29da790a6b0e258d3ceb3c8603b14a5f961698e96982173dbe83eda383de1a1",
+    "reference/frozen-core.json": "14705d64996b58dbff1b2461c34a401bfab148a41b9b42ca31f7a36e33e68f02",
+    "reference/递推数值差异说明.md": "b9e8bbb2a85e8fbe19a9e62e52fee89a4fe968150fc297eacb9257bfdaab4636",
+    "tests/check_native.py": "53e70f0053fcdeea401d0d9dbb11441994b71eae1d7a60ee59546841818d333e",
+    "tests/check_release.py": "e94cf572d54768a38abd7dc601ea65d8aca62fbda8b38defa33db23f2dc1fcf4",
+    "tests/check_snapshot.py": "f66bb28f6321b560a12cb7edd0acee7b84300941e09ee07e43f09fef76cc2d24",
+    "tools/audit_device_table.py": "24b17f6e6a24e56d5cfb9feb7141358b6f289845e0421cc3458fcd4aabb632a2",
+    "tools/build_native.cmd": "e18286634317c742cdec39ae250a6804d4d20f5fd5859262e89beb8b9349554c",
+    "tools/ide_build.py": "faa370d250d5ee8c749adb0beb1c319305accd744e18520f8ce87ae4eb8a3233",
+    "tools/open_flash.py": "867acce0f924503deb3c8d3a83dd9824075d38ad2419246576e7a41474013b9c",
+    "tools/package_release.py": "ec866d729331e5a67dfe29016c345c954b9ee231d0665f68b647410549187688",
+    "tools/wm.py.cmd": "fa562fd7e53f70e0a5327fe50620f1f2421b2122009889c6c986f9084a9862ba",
+    "W803_HEART_R1.code-workspace": "0adb8ea2707d05887b232edbae7333fb8f806fdcb68cccb2aadb9feabce1453b"
+  },
+  "artifacts": [
+    {
+      "file": "release\\W803_HEART_R1_V1.0.0_ROTATE16_20261119.fls",
+      "bytes": 153536,
+      "sha256": "454afcd20ef7b31c011d944b7d21b129547eab9381ff73f1edd14860ec9fa29f"
+    },
+    {
+      "file": "release\\W803_HEART_R1_V1.0.0_ROTATE16_20261119_source.zip",
+      "bytes": 61370,
+      "sha256": "475575cf37841c3a4e4372a2f2ce12e7957334e88607e2fee1684a8ead02bd05"
+    },
+    {
+      "file": "release\\debug\\W803_HEART_R1_V1.0.0_ROTATE16_20261119.elf",
+      "bytes": 3815956,
+      "sha256": "093ae9c2e4620f4b1672512b4b1da8322e0b5f13c079893e96a7fc6084ae1386"
+    },
+    {
+      "file": "release\\debug\\W803_HEART_R1_V1.0.0_ROTATE16_20261119.map",
+      "bytes": 605320,
+      "sha256": "d8822a926d7b5f30b1fc59b8d32f7df881566519852d7fd6dfd64357e142f691"
+    }
+  ],
+  "regression_reports": [
+    "native-verification.json",
+    "snapshot-verification.json",
+    "release-verification.json"
+  ],
+  "build_report": "build-verification.json"
+}

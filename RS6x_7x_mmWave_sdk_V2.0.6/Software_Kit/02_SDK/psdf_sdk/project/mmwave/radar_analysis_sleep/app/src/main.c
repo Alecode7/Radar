@@ -49,6 +49,20 @@
 #include "mmw_point_cloud_psic_lib.h"
 #include "hal_wkio.h"
 #include "sleep_detect.h"
+#include "heart_rate_device.h"
+#include "heart_sampling_profile.h"
+#include "sleep_async_log_impl.h"
+/* Diagnostic helpers live with main's normal Flash text, keeping them out
+ * of the vendor mmw_report object's SRAM placement. No linker change. */
+#define HF_AUX_IMPLEMENTATION
+#include "heart_target_window.h"
+#include "heart_raw_record.h"
+#include "heart_clock_capture.h"
+#undef HF_AUX_IMPLEMENTATION
+#include "hr_migration_clock_impl.h"
+#include "heart_result_policy_impl.h"
+#include "rsp_result_runtime_impl.h"
+#include "rsp_query_runtime_impl.h"
 
 #include "log.h"
 /* Private typedef.
@@ -103,8 +117,8 @@ int human_motion_default_config(void)
         LOG_PRINT("velocity cfg error! %d\n", ret);
         return ret;
     }
-    /* Recovery profile: keep the proven 5 Hz radar and sleep cadence. */
-    ret = mmw_frame_cfg(200, 0);
+    /* V16 front-end experiment: RF20Hz, callback sleep/HR processing5Hz. */
+    ret = mmw_frame_cfg(HEART_RADAR_PERIOD_MS, 0);
     if (ret) {
         LOG_PRINT("frame cfg error! %d\n", ret);
         return ret;
@@ -176,7 +190,7 @@ static int wkio_wake_init(void)
 
 int main(void)
 {
-    uint32_t status = 0;
+    int status = 0;
 
 
     int cpuid = csi_get_cpu_id();
@@ -200,19 +214,51 @@ int main(void)
     }
     #endif
 
+    printf("FW_VERIFY_VERSION=" HEART_FAST_MARKER "\r\n");
+#if HEART_FAST_PROFILE
+    printf("HF_PROFILE V=1 RF_MS=50 SLOW_MS=200 DIV=4 FS=20 OF=5 FRONT_DIAGNOSTIC_ONLY=1 SEQ_KIND=CALLBACK\r\n");
+#else
+    printf("HR_PORT_PROFILE V=2 RFMS=200 APPMS=200 CLOCK=CORET FRESHMS=10000 HOLD=SAME_BED POLICY=H4_KNOWN_BR\r\n");
+#endif
     LOG_PRINT("mmw_ctrl_open\n");
+    rsp_query_runtime_init_state(RSP_INIT_BOOTING,RSP_STAGE_OPEN);
     status = mmw_ctrl_open(true, false, true);
     if (status != 0) {
+        rsp_query_runtime_init_state(RSP_INIT_FAULT,RSP_STAGE_OPEN);
         LOG_PRINT("mmw_ctrl_open fail %d\n", status);
+        printf("SLEEP_FW_INIT_FAIL STAGE=OPEN RET=%d\r\n", status);
+        return status;
     }
 
+    rsp_query_runtime_init_state(RSP_INIT_BOOTING,RSP_STAGE_LOG);
+    status = sleep_trace_init();
+    printf("ASYNC_LOG_INIT RET=%d RING=8192 TXSTACK=2048 DATASTACK=4096\r\n",status);
+    if (status != 0) {
+        rsp_query_runtime_init_state(RSP_INIT_FAULT,RSP_STAGE_LOG);
+        return status; /* Do not run with blocking fallback TX. */
+    }
+
+    rsp_query_runtime_init_state(RSP_INIT_BOOTING,RSP_STAGE_CONFIG);
     status = human_motion_default_config();
     if (status != 0) {
+        rsp_query_runtime_init_state(RSP_INIT_FAULT,RSP_STAGE_CONFIG);
         LOG_PRINT("human_motion_default_config fail %d\n", status);
+        printf("SLEEP_FW_INIT_FAIL STAGE=CONFIG RET=%d\r\n", status);
+        return status;
     }
 
+    rsp_query_runtime_init_state(RSP_INIT_BOOTING,RSP_STAGE_SLEEP);
     sleep_detect_init(NULL);
-    printf("SLEEP_FW_READY p1812 SAFEHR5 MICROIQ NOPOINTTX\r\n");
+#if CONFIG_SLEEP_HEART_DEVICE
+    rsp_query_runtime_init_state(RSP_INIT_BOOTING,RSP_STAGE_HEART);
+    status = heart_rate_device_init();
+    printf("HRFW_INIT RET=%d CORE_BYTES=%lu ALG=SAFEHR5_PC_PORT\r\n", status,
+           (unsigned long)heart_rate_device_core_bytes());
+#endif
+    rsp_query_runtime_init_state(status==0?RSP_INIT_READY:RSP_INIT_FAULT,
+                                 status==0?RSP_STAGE_COMPLETE:RSP_STAGE_HEART);
+    if(status==0)printf("SLEEP_FW_READY p1812 SAFEHR5 MICROIQ NOPOINTTX\r\n");
+    else printf("SLEEP_FW_INIT_FAIL STAGE=HEART RET=%d\r\n",status);
 
 #if (CONFIG_PM)
     wkio_wake_init();

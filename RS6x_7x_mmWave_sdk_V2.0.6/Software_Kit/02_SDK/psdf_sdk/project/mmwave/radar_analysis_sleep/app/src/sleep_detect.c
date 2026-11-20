@@ -1,4 +1,8 @@
 #include "sleep_detect.h"
+#include "sleep_mount_math.h"
+#include <math.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 #ifndef ABS
 #define ABS(x) ((x) < 0 ? -(x) : (x))
@@ -103,6 +107,70 @@ typedef struct {
 } SleepDetectState;
 
 static SleepDetectState g_sleep_state;
+
+/* Kept outside detection state so sleep_detect_reset() cannot erase it. */
+typedef struct {
+    uint8_t enabled;
+    uint16_t height_cm;
+    uint16_t pitch_deg;
+    float cos_pitch;
+    float sin_pitch;
+} SleepMountState;
+
+static SleepMountState g_sleep_mount = {0, 0, 0, 1.0f, 0.0f};
+
+void sleep_detect_get_mount_snapshot(SleepDetectMountSnapshot *snapshot)
+{
+    if (snapshot == NULL) {
+        return;
+    }
+
+    taskENTER_CRITICAL();
+    snapshot->enabled = g_sleep_mount.enabled;
+    snapshot->height_cm = g_sleep_mount.height_cm;
+    snapshot->pitch_deg = g_sleep_mount.pitch_deg;
+    snapshot->bed_x_min_cm = g_sleep_state.cfg.bed_x_min_cm;
+    snapshot->bed_x_max_cm = g_sleep_state.cfg.bed_x_max_cm;
+    snapshot->bed_y_min_cm = g_sleep_state.cfg.bed_y_min_cm;
+    snapshot->bed_y_max_cm = g_sleep_state.cfg.bed_y_max_cm;
+    snapshot->bed_z_min_cm = g_sleep_state.cfg.bed_z_min_cm;
+    snapshot->bed_z_max_cm = g_sleep_state.cfg.bed_z_max_cm;
+    taskEXIT_CRITICAL();
+}
+
+bool sleep_detect_set_mount(uint16_t height_cm, uint16_t pitch_deg)
+{
+    SleepMountState mount;
+    float pitch_rad;
+
+    if (height_cm > SLEEP_MOUNT_HEIGHT_MAX_CM ||
+        pitch_deg > SLEEP_MOUNT_PITCH_MAX_DEG) {
+        return false;
+    }
+    pitch_rad = (float)pitch_deg * (3.14159265358979323846f / 180.0f);
+    mount.enabled = 1;
+    mount.height_cm = height_cm;
+    mount.pitch_deg = pitch_deg;
+    mount.cos_pitch = cosf(pitch_rad);
+    mount.sin_pitch = sinf(pitch_rad);
+
+    taskENTER_CRITICAL();
+    g_sleep_mount = mount;
+    taskEXIT_CRITICAL();
+    /* Caller has stopped acquisition and drained the current data event. */
+    sleep_detect_reset();
+    return true;
+}
+
+void sleep_detect_disable_mount(void)
+{
+    const SleepMountState mount = {0, 0, 0, 1.0f, 0.0f};
+
+    taskENTER_CRITICAL();
+    g_sleep_mount = mount;
+    taskEXIT_CRITICAL();
+    sleep_detect_reset();
+}
 
 static uint8_t sleep_detect_percent(uint32_t part, uint32_t total)
 {
@@ -778,12 +846,37 @@ void sleep_detect_reset(void)
 
 void sleep_detect_init(const SleepDetectConfig *cfg)
 {
-    g_sleep_state.cfg = cfg ? *cfg : sleep_detect_default_config();
-    sleep_detect_reset();
+    SleepDetectConfig initial_cfg = cfg ? *cfg : sleep_detect_default_config();
+
+    /* Initialization is a new session/boot, unlike a detection-only reset. */
+    taskENTER_CRITICAL();
+    g_sleep_state.cfg = initial_cfg;
+    taskEXIT_CRITICAL();
+    sleep_detect_disable_mount();
 }
 
 static bool point_in_bed_zone(const PointCloud3D *point)
 {
+    SleepMountState mount;
+
+    taskENTER_CRITICAL();
+    mount = g_sleep_mount;
+    taskEXIT_CRITICAL();
+
+    if (mount.enabled) {
+        SleepMountPoint bed = sleep_mount_to_bed(point->cart.x, point->cart.y,
+                                                point->cart.z, mount.height_cm,
+                                                mount.cos_pitch, mount.sin_pitch);
+
+        return bed.x >= g_sleep_state.cfg.bed_x_min_cm &&
+               bed.x <= g_sleep_state.cfg.bed_x_max_cm &&
+               bed.y >= g_sleep_state.cfg.bed_y_min_cm &&
+               bed.y <= g_sleep_state.cfg.bed_y_max_cm &&
+               bed.z >= g_sleep_state.cfg.bed_z_min_cm &&
+               bed.z <= g_sleep_state.cfg.bed_z_max_cm;
+    }
+
+    /* Disabled: preserve the original integer ROI test exactly. */
     return point->cart.x >= g_sleep_state.cfg.bed_x_min_cm &&
            point->cart.x <= g_sleep_state.cfg.bed_x_max_cm &&
            point->cart.y >= g_sleep_state.cfg.bed_y_min_cm &&

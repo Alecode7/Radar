@@ -90,6 +90,36 @@ typedef struct {
     uint16_t report_interval_frames;
 } SleepDetectConfig;
 
+/* RAM only: init/boot disables the transform; reset and stop/start retain it.
+ * Bounds are the actual configured inclusive ROI, in RADAR coordinates when
+ * disabled and BED coordinates when enabled. No thresholds are changed.
+ */
+#define SLEEP_MOUNT_HEIGHT_MAX_CM 300U
+#define SLEEP_MOUNT_PITCH_MAX_DEG 80U
+
+typedef struct {
+    uint8_t enabled;
+    uint16_t height_cm;             /* Chip vertical height ABOVE MATTRESS. */
+    uint16_t pitch_deg;             /* Positive downward, upright radar axes. */
+    int16_t bed_x_min_cm;
+    int16_t bed_x_max_cm;
+    int16_t bed_y_min_cm;
+    int16_t bed_y_max_cm;
+    int16_t bed_z_min_cm;
+    int16_t bed_z_max_cm;
+} SleepDetectMountSnapshot;
+
+/* Task-context APIs. Reader takes a short critical-section snapshot and may
+ * run during detection. Disabled snapshots always return height=pitch=0.
+ * Writers require a stopped, quiescent detector; enabling also requires the
+ * chip's existing mount_type == MMW_MOUNT_VERTICAL (enforced by sleepcfg).
+ * Valid writes reset detection state, retaining ROI/threshold configuration.
+ * set_mount returns false without mutation for out-of-range values.
+ */
+void sleep_detect_get_mount_snapshot(SleepDetectMountSnapshot *snapshot);
+bool sleep_detect_set_mount(uint16_t height_cm, uint16_t pitch_deg);
+void sleep_detect_disable_mount(void);
+
 void sleep_detect_init(const SleepDetectConfig *cfg);
 void sleep_detect_reset(void);
 void sleep_detect_update(const PointCloud3D *motion_points,
